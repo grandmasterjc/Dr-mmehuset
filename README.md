@@ -25,4 +25,9 @@ Mappen `ios/` inneholder en egen iOS-app skrevet i Swift og SwiftUI.
 2. Velg ditt eget team under *Signing & Capabilities*.
 3. Trykk Kjør.
 
-Første versjon har Sminke, Hår, Klær, Pakke, åtte personer, mynter og lagring. Hus, Barn og Liv kommer i senere versjoner.
+Appen har alle delene fra nettversjonen: Sminke, Hår, Klær, Hus, Barn, Liv og Pakke, åtte personer, mynter og lagring.
+
+- Tegningene er de samme SVG-tegningene som i nettversjonen, tegnet med SwiftUI.
+- 3D-huset i Liv er laget med SceneKit: to etasjer, trapp, venner og naboer som følger etter, barn, kjæledyr, mat, dusj, bad og søvn.
+- Ute, bilturen, flyplassen, flyturen, reisemålene og dyrebutikken er tegnede scener.
+- Lyd og musikk lages i appen (AVAudioEngine), som i nettversjonen.

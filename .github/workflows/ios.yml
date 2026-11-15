@@ -38,7 +38,11 @@ jobs:
           shoot "$P" iphone-hus-stue -tab hus -husvis inne -rom stue -tid kveld
           shoot "$P" iphone-hus-kjokken -tab hus -husvis inne -rom kjokken -tid dag
           shoot "$P" iphone-barn -tab barn
-          WAIT=9 shoot "$P" iphone-liv -tab liv
+          WAIT=9 shoot "$P" iphone-liv -tab liv -sted hjem
+          WAIT=9 shoot "$P" iphone-liv-venn -tab liv -sted venn
+          shoot "$P" iphone-liv-ute -tab liv -sted ute
+          shoot "$P" iphone-liv-bil -tab liv -sted bil
+          shoot "$P" iphone-liv-flyplass -tab liv -sted flyplass
           I=$(pick "iPad"); xcrun simctl boot "$I"; xcrun simctl bootstatus "$I" -b
           xcrun simctl install "$I" build/Debug-iphonesimulator/Drommehuset.app
           shoot "$I" ipad-hus -tab hus -husvis ute

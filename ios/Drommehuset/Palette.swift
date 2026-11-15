@@ -45,14 +45,7 @@ func js(_ x: Double) -> String {
 }
 func js(_ x: Int) -> String { String(x) }
 /// Som JavaScripts toFixed: runder halve opp (bort fra null).
-func fx(_ x: Double, _ d: Int) -> String {
-    let p = pow(10.0, Double(d)), y = x * p
-    if abs(y - y.rounded(.towardZero)) == 0.5 {
-        let r = y.rounded(.toNearestOrAwayFromZero) / p
-        return String(format: "%.\(d)f", r)
-    }
-    return String(format: "%.\(d)f", x)
-}
+func fx(_ x: Double, _ d: Int) -> String { tf(x, d) }
 
 /// Samme tilfeldige tall-rekke som rng() i nettversjonen (gir samme kunstverk og mønstre).
 struct Rng {

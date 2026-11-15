@@ -86,7 +86,9 @@ struct Stage: View {
         let scene: (String, String)? = m.tab == "hus" ? (m.s.house.view == "inne" ? HouseArt.room(m.s.house.inne.rom, m.s.house.inne[m.s.house.inne.rom], m.s) : HouseArt.house(m.s)) : nil
         ZStack {
             RadialGradient(colors: [Color(hex: "#f5f2f0"), Color(hex: "#ddd7d5"), Color(hex: "#c4bdbb")], center: UnitPoint(x: 0.5, y: 0.28), startRadius: 0, endRadius: 520)
-            if let ks = kidSVG {
+            if m.tab == "liv" {
+                LivStage()
+            } else if let ks = kidSVG {
                 SVGView(svg: ks, viewBox: CGRect(x: 0, y: 0, width: 560, height: 610)).padding(.top, 12)
             } else if let sc = scene {
                 Color(hex: sc.1)
@@ -97,7 +99,7 @@ struct Stage: View {
                 SVGView(svg: "<g transform=\"translate(150 598) scale(\(js(f.h))) translate(-150 -598)\">\(fig)</g>")
                     .padding(.top, 12)
             }
-            if scene == nil && kidSVG == nil { VStack {
+            if scene == nil && kidSVG == nil && m.tab != "liv" { VStack {
                 HStack {
                     if s.oops != nil {
                         StageButton(label: "Fiks det", dark: true) { m.set(\.oops, nil) }
@@ -180,7 +182,7 @@ struct PanelArea: View {
                     case "pakke": PakkePanel()
                     case "hus": HusPanel()
                     case "barn": BarnPanel()
-                    default: SnartPanel(title: "Liv")
+                    default: LivPanel()
                     }
                 }
                 .padding(16)
@@ -201,7 +203,7 @@ struct BuyBar: View {
         VStack(alignment: .leading, spacing: 10) {
             (Text(item.name).bold() + Text(" koster \(item.price) mynter. Du har \(c)."))
             if miss > 0 {
-                Text("Du mangler \(miss) mynter. Vinn den i en pakke, eller tjen mynter når Liv kommer i appen.").font(.system(size: 14)).foregroundStyle(Theme.soft)
+                Text("Du mangler \(miss) mynter. Vinn den i en pakke, eller tjen mynter med oppdrag under Liv.").font(.system(size: 14)).foregroundStyle(Theme.soft)
                 Chip(label: "Ok") { m.ask = nil }
             } else {
                 HStack {
