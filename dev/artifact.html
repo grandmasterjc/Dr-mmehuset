@@ -745,7 +745,7 @@ function hud(){const g=Gm(),n=g.needs,nm=esc(P().name)||'Hun',low=n.sult<25?nm+'
   return `<div class="hud"><div class="hudtop"><span class="coin">${g.coins} mynter</span><span>Nivå ${level()}</span><span class="xp" title="Poeng til neste nivå"><b style="width:${g.xp%100}%"></b></span></div><div class="needs" id="needs">${needsHTML()}</div>${low?`<p class="hint">${low}</p>`:''}</div>`}
 const tasksHTML=()=>row('Oppdrag',`<ul class="tasks">${['a','b','c'].map(sl=>{const t=Gm().tasks[sl];return `<li>${esc(taskText(t))}<span>+${taskPay(t)}</span></li>`}).join('')}</ul>`)+'<p class="hint">Oppdrag gir mynter og poeng. Er alle behov over halvfulle, får du halvannen gang så mange mynter.</p>';
 const kidRow=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food',Lf().food?'Gi barnet '+esc(Lf().food.name.toLowerCase()):'Gi mat',1))};
-const petRow=()=>{const pt=P().pet;return pt.type==='none'?'':row(esc(pt.name)||'Kjæledyr',ab('pet','Klapp',1)+ab('petplay','Lek',1)+ab('petfeed','Gi mat',1))};
+const petRow=()=>{const pt=P().pet;return pt.type==='none'?'':row(esc(pt.name)||'Kjæledyr',ab('pet','Klapp',1)+ab('petplay','Lek',1)+ab('petfeed','Gi mat',1)+(use3()&&Lf().place==='hjem'?ab('petbed',G3.petBed?'Kall på '+esc(pt.name):'Send til '+(pt.type==='hund'?'hundesenga':'senga'),1):''))};
 function tick(){if(state.tab!=='liv'||flying||cook)return;need('sult',-1.2);need('energi',-.8);need('hygiene',-.7);need('humor',-.9);const pt=P().pet;if(pt.type!=='none')pt.glad=Math.max(0,pt.glad-1);if(P().kid.age>=0){P().kid.glad=Math.max(0,P().kid.glad-.8);P().kid.mett=Math.max(0,P().kid.mett-1)}
   if(Lf().pending&&Gm().mail<3&&Math.random()<.35){Gm().mail++;toast('Det har kommet post i postkassa.')}
   else if(Gm().mail<3&&Math.random()<.06){Gm().mail++;toast('Det har kommet post i postkassa.')}
@@ -1002,6 +1002,7 @@ function build3(){
   if(S.items.bord){B(g,6.55,7.65,.38,.43,1.34,1.74,wood);legs(6.6,7.6,[0,.38],1.38,1.7,wd);B(g,6.9,7.2,.43,.46,1.44,1.64,'#e7ddd0');B(g,6.93,7.17,.46,.485,1.46,1.62,'#9b3b47');Cy(g,7.42,.43,.5,1.54,.06,wh,.08)}
   if(S.items.lampe){Cy(g,5.45,0,.03,.6,.16,dk);Cy(g,5.45,0,1.5,.6,.018,dk);Cy(g,5.45,1.5,1.82,.6,.2,'#efe7d6',.13,eve?'b':'');lamp(5.6,1.9,1)}
   if(S.items.plante)plant(8.8,0,.6);
+  if(!away&&P().pet.type!=='none'){const bc=P().pet.collar!=='none'?P().pet.collar:'#9b3b47',m=new T.Mesh(new T.TorusGeometry(.36,.11,10,24),m3(bc));m.rotation.x=Math.PI/2;m.position.set(10.1,.11,4.15);fin(g,m);Cy(g,10.1,0,.07,4.15,.34,shade(bc,.35));Cy(g,10.1,.07,.1,4.15,.3,'#f2ece2');G3.obs.push([10.1,4.15,.5,0])}
   if(S.items.tv){const on=!away&&Lf().tv;B(g,9.2,10.5,.08,.45,.2,.65,wood);legs(9.25,10.45,[0,.08],.24,.6,dk);B(g,9.84,9.86,.1,.43,.65,.66,wd);B(g,9.75,9.95,.45,.6,.3,.4,dk);B(g,9.3,10.4,.6,1.3,.3,.35,dk);B(g,9.33,10.37,.63,1.27,.35,.365,on?'#86aede':'#20242b','b');if(on){const p=new T.PointLight('#8fb6e6',.6,5);p.position.set(9.85,1,1.2);g.add(p)}}
   if(S.items.bokhylle){B(g,10.62,10.94,0,1.95,.3,2.3,wood);for(let k=0;k<4;k++){B(g,10.6,10.63,.1+k*.46,.12+k*.46,.32,2.28,wd);for(let b=0;b<12;b++)B(g,10.54,10.63,.12+k*.46,.12+k*.46+.24+(b*7%4)*.03,.38+b*.155,.38+b*.155+.11,['#c9736b','#34507a','#e7ddd0','#5d7a5e','#c9a227','#8c8f96'][(b*5+k)%6])}}
   art(7.1,0,S.art);win(9.85,0,S.items.gardiner);
@@ -1026,6 +1027,8 @@ function build3(){
   if(So.items.speil){B(g,10.9,10.94,3.2,4.9,.4,1.1,gold);B(g,10.87,10.9,3.26,4.84,.46,1.04,'#cfdde6','s')}
   if(So.items.lyslenke)for(let x=5.3;x<10.75;x+=.3)Sp(g,x,5.55-.18*Math.sin((x-5.3)/5.4*Math.PI),.06,.035,eve?'#fff3c4':'#ffe9a8','b');
   if(So.items.plante)plant(6.62,3,.5,.9);
+  if(!away&&P().kid.age>0){B(g,7.15,9.05,3,3.28,3.85,4.6,wood);legs(7.15,9.05,[3,3.1],3.87,4.58,wd);B(g,7.2,9.0,3.28,3.42,3.9,4.55,wh);B(g,7.75,9.02,3.4,3.5,3.88,4.57,'#5d9a52');B(g,7.62,7.78,3.41,3.51,3.88,4.57,'#4a8243');B(g,7.25,7.6,3.42,3.52,3.98,4.47,wh);B(g,7.05,7.15,3,3.85,3.85,4.6,wood);B(g,9.05,9.15,3,3.6,3.85,4.6,wood);
+    [[7.65,4.25],[8.55,4.25]].forEach(q=>G3.obs.push([q[0],q[1],.5,1]))}
   if(!away&&P().kid.age===0){const kd=P().kid;B(g,9.85,10.65,3.3,3.38,1.95,2.65,wh);legs(9.85,10.65,[3,3.3],1.95,2.65,wood);B(g,9.85,10.65,3.36,3.4,1.95,2.65,'#f6f4ef');
     for(let x=9.85;x<10.66;x+=.1){B(g,x-.012,x+.012,3.38,3.72,1.95,1.975,wood);B(g,x-.012,x+.012,3.38,3.72,2.625,2.65,wood)}[1.95,2.63].forEach(z=>B(g,9.84,10.66,3.72,3.75,z,z+.025,wood));[9.84,10.64].forEach(x=>{B(g,x,x+.02,3.38,3.75,1.95,2.65,wood)});
     const bb=Sp(g,10.25,3.46,2.24,1,(kd.look&&kd.look.topColor)||(kd.girl?'#e9cfd0':'#cfd9e3'));bb.scale.set(.1,.07,.17);Sp(g,10.25,3.5,2.46,.068,P().skin);const hh=Sp(g,10.25,3.53,2.44,1,P().hairColor);hh.scale.set(.066,.045,.06);G3.obs.push([10.25,2.3,.62,1])}
@@ -1219,6 +1222,9 @@ function kidLook(){const q=state.people[state.cur],k=q.kid,L=k.look||{},g=k.girl
 function buildKid(){clr(G3.kid);G3.krig=null;G3.kid.visible=false;if(P().kid.age<1)return;dl=kidLook();G3.krig=buildMe(G3.kid);dl=null;G3.kid.visible=true}
 function kidStep(dt,now){
   const R=G3.krig;if(!R||!G3.kid.visible)return;const h=Lf()[HK()];if(!G3.kp)G3.kp={x:Math.max(.5,h.x-.5),y:h.y>1.5?3:0,z:Math.max(1.8,h.z),a:0,ph:0};
+  if(G3.kbed&&Lf().place==='hjem'){const hs=G3.kid.scale.y;[0,1].forEach(i=>{R.hip[i].rotation.x=0;R.knee[i].rotation.x=.1;R.foot[i].rotation.x=.4;R.arm[i].rotation.x=-.2;R.arm[i].rotation.z=(i?1:-1)*.1;R.elbow[i].rotation.x=-.3});R.tr.rotation.set(0,0,0);R.bd.position.set(0,Math.sin(now/900)*.01,0);
+    G3.kid.rotation.set(0,0,Math.PI/2);G3.kid.position.set(8.95,3.6,4.2);G3.kid.visible=true;return}
+  if(G3.kid.rotation.z){G3.kid.rotation.z=0;G3.kp.x=8.1;G3.kp.z=3.3;G3.kp.y=3}
   if(G3.kseat){const ks=G3.kseat,hs=G3.kid.scale.y,T=THREE;
     if(!ks.plate){ks.plate=new T.Group();Cy(ks.plate,13.72,.76,.78,4.35,.13,'#fbfaf7',.15);ks.food=Sp(ks.plate,13.72,.8,4.35,1,'#d9a55a');ks.food.scale.set(.09,.035,.09);Cy(ks.plate,13.62,.76,.9,4.18,.03,'#cfe3ec',.035);G3.scene.add(ks.plate)}
     ks.t-=dt;const u=Math.max(.05,ks.t/4.5);ks.food.scale.set(.09*u,.035,.09*u);
@@ -1273,7 +1279,7 @@ function props3(){
 }
 function startPet(k){
   const h=Lf()[HK()],ry=G3.me.rotation.y,lo=h.x<5?.5:h.x<11?5.35:11.35,hi=h.x<5?4.65:h.x<11?10.65:15.5,cl=(v,a,b)=>Math.max(a,Math.min(b,v));
-  endAct(true);props3();G3.path=null;G3.after=null;const pt=P().pet.type;setTimeout(()=>sfx(pt==='hund'?'bark':pt==='katt'?'meow':'squeak'),k==='petplay'?1500:900);
+  endAct(true);G3.petBed=false;props3();G3.path=null;G3.after=null;const pt=P().pet.type;setTimeout(()=>sfx(pt==='hund'?'bark':pt==='katt'?'meow':'squeak'),k==='petplay'?1500:900);
   const fx=cl(h.x+Math.sin(ry)*.6,lo,hi),fz=cl(h.z+Math.cos(ry)*.6,1.8,4.5),d=(h.x-lo>hi-h.x)?-1:1;
   G3.pa={k:k,ph:0,t:0,fx:fx,fz:fz,bx:cl(h.x+d*2.4,lo,hi),bz:cl(h.z+.5,1.9,4.4),y:h.y};G3.act='petcare';
   G3.props.visible=true;G3.bowl.visible=false;G3.ball.visible=false;G3.hearts.forEach(m=>m.visible=false);G3.food.scale.set(1,1,1);
@@ -1282,7 +1288,7 @@ function donePet(){
   const a=G3.pa,pt=P().pet,d=PETFX[a.k];G3.pa=null;endAct(true);pt.glad=Math.min(100,pt.glad+d[0]);need('humor',d[1]);msg=pt.name+d[2];fire(a.k);render();
 }
 function petStep(dt,now){
-  const R=G3.petRig,pp=G3.pp;if(!R||!pp)return;const a=G3.pa,sc=G3.pet.scale.y;let mv=0,eat=false,wag=1;
+  const R=G3.petRig,pp=G3.pp;if(!R||!pp)return;const a=G3.pa,sc=G3.pet.scale.y;let mv=0,eat=false,wag=1,lie=false;
   const go=(tx,tz,ty,sp)=>{const ex=tx-pp.x,ez=tz-pp.z,d=Math.hypot(ex,ez);if(d>.05){const st=Math.min(d,sp*dt);pp.x+=ex/d*st;pp.z+=ez/d*st;pp.y+=(ty-pp.y)*Math.min(1,st/d);mv=st;
       let q=Math.atan2(ex,ez)-G3.pet.rotation.y;q=Math.atan2(Math.sin(q),Math.cos(q));G3.pet.rotation.y+=q*Math.min(1,dt*10)}return d};
   const face=(tx,tz)=>{let q=Math.atan2(tx-pp.x,tz-pp.z)-G3.pet.rotation.y;q=Math.atan2(Math.sin(q),Math.cos(q));G3.pet.rotation.y+=q*Math.min(1,dt*8)};
@@ -1299,12 +1305,13 @@ function petStep(dt,now){
       else if(a.ph===2){b.position.set(a.bx,a.y+.055+Math.abs(Math.sin(a.t*9))*.12*Math.max(0,1-a.t),a.bz);if(go(a.bx,a.bz,a.y,3.6)<.12){a.ph=3;a.t=0}}
       else if(a.ph===3){const d=go(a.fx,a.fz,a.y,3.2);b.position.set(pp.x+Math.sin(G3.pet.rotation.y)*.26*sc,pp.y+.27*sc,pp.z+Math.cos(G3.pet.rotation.y)*.26*sc);if(d<.1){a.ph=4;a.t=0}}
       else{face(me.x,me.z);wag=3;b.position.set(pp.x+Math.sin(G3.pet.rotation.y)*.26*sc,pp.y+.27*sc+a.t*.25,pp.z+Math.cos(G3.pet.rotation.y)*.26*sc);if(a.t>1.3)return donePet()}}
-  }else{const tr=G3.trail,lag=P().pet.leash?5:8,t=tr.length>lag?tr[tr.length-lag]:null;if(t){const d=Math.hypot(t.x-pp.x,t.z-pp.z);if(d>.06)go(t.x,t.z,t.y,Math.min(3.2,d*5))}}
+  }else if(G3.petBed&&Lf().place==='hjem'){if(go(10.1,4.15,0,2.4)<.1){lie=true;wag=.4;G3.pet.rotation.y+=(-.6-G3.pet.rotation.y)*Math.min(1,dt*3)}}
+  else{const tr=G3.trail,lag=P().pet.leash?5:8,t=tr.length>lag?tr[tr.length-lag]:null;if(t){const d=Math.hypot(t.x-pp.x,t.z-pp.z);if(d>.06)go(t.x,t.z,t.y,Math.min(3.2,d*5))}}
   G3.pph+=mv*16;const am=Math.min(1,mv/dt/1.4),sn=Math.sin(G3.pph);
-  R.legs.forEach((L,i)=>{L.rotation.x=((i===0||i===3)?1:-1)*.65*am*sn});if(R.tail)R.tail.rotation.z=Math.sin(now/(150/wag))*.4;
+  R.legs.forEach((L,i)=>{L.rotation.x=lie?(i<2?-1.35:1.35):((i===0||i===3)?1:-1)*.65*am*sn});if(R.tail)R.tail.rotation.z=Math.sin(now/(150/wag))*.4;
   R.hd.rotation.x=eat?.75+Math.sin(now/110)*.14:0;
   let hop=R.type==='kanin'?am*.07*Math.abs(sn):am*.012*Math.abs(sn);if(G3.petJump>0){G3.petJump-=dt;hop+=Math.abs(Math.sin(G3.petJump*8))*.2}
-  G3.pet.position.set(pp.x,pp.y+hop,pp.z);
+  G3.pet.position.set(pp.x,pp.y+hop+(lie?.04-.09*sc:0),pp.z);if(R.hd)R.hd.rotation.x=lie?.35:R.hd.rotation.x;
   if(!G3.leash){G3.leash=new THREE.Line(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(27),3)),new THREE.LineBasicMaterial({color:0x3a2a20}));G3.leash.frustumCulled=false;G3.scene.add(G3.leash)}
   const on=!!P().pet.leash&&!G3.act;G3.leash.visible=on;
   if(on){const me=G3.me,ry=me.rotation.y,f=Ft().h,hx=me.position.x+Math.cos(ry)*.25*f,hy=me.position.y+.84*f,hz=me.position.z-Math.sin(ry)*.25*f,py=pp.y+hop+.27*sc,q=G3.leash.geometry.attributes.position;
@@ -1386,7 +1393,7 @@ function loop3(now){
   requestAnimationFrame(loop3);
 }
 function sync3(){
-  const H=state.house,l=Lf(),away=l.place==='venn',k=JSON.stringify([away?l.friend:H.inne,P().kid.age,H.time,H.wall,H.door,H.roofColor,l.tv,state.rain]),ck=state.cur+JSON.stringify(P(),(n,v)=>n==='glad'||n==='oops'||n==='xp'?undefined:v);
+  const H=state.house,l=Lf(),away=l.place==='venn',k=JSON.stringify([away?l.friend:H.inne,P().kid.age,P().pet.type,P().pet.collar,H.time,H.wall,H.door,H.roofColor,l.tv,state.rain]),ck=state.cur+JSON.stringify(P(),(n,v)=>n==='glad'||n==='oops'||n==='xp'?undefined:v);
   if(k!==G3.key){G3.key=k;build3()}
   if(yAt(l[HK()].x,l[HK()].z,l[HK()].y)==null)l[HK()]={x:8,z:3.1,y:0};
   if(ck!==G3.ckey){G3.ckey=ck;buildMe();buildPet();buildKid();G3.pp=null;G3.kp=null}
@@ -1558,6 +1565,9 @@ function act(a){
   const l=Lf(),p=P(),nm=p.name||'Hun',[k,v]=a.split(':');msg='';
   if(l.place==='bil'&&/^(friend|petshop|airport)$/.test(k))fire('drive');
   if(k==='letterdone'){l.letter=null;return render()}
+  if(k==='petbed'){G3.petBed=!G3.petBed;msg=G3.petBed?p.pet.name+' går og legger seg i '+(p.pet.type==='hund'?'hundesenga':'senga si')+'.':p.pet.name+' kommer løpende.';if(!G3.petBed)G3.petJump=.8;sfx(p.pet.type==='hund'?'bark':p.pet.type==='katt'?'meow':'squeak');return render()}
+  if(k==='kidbed'){if(G3.kbed){G3.kbed=false;msg=p.kid.name+' er våken og vil leke.';sfx('giggle');return render()}
+    return walkTo(8.1,3.3,3,()=>{G3.kbed=true;p.kid.glad=Math.min(100,p.kid.glad+15);msg=p.kid.name+' sover i den grønne senga. God natt!';fire('kid');render()})}
   if(k==='cooktog'&&G3.hb){const hb=G3.hb;hb.mode='cook';hostGo(13.45,1.8,0,()=>{hb.ry=PI});hostSay('Ja! Så gøy. Jeg hjelper deg.');return walkTo(12.5,1.78,0,()=>{if(G3.me)G3.me.rotation.y=PI;cook={step:1,tog:true};render()})}
   if(k==='eattog'&&G3.hb&&l.food){const hb=G3.hb,fd=l.food;hb.mode='eat';hostGo(15.55,4.35,0,()=>{hb.act='chair';hb.seat={x:15.2,y:.5,z:4.35,r:-PI/2}});
     return walkTo(12.8,4.35,0,()=>{G3.seat={x:13.25,y:.5,z:4.35,r:PI/2};G3.act='sit';need('sult',fd.ok?55:30);need('humor',15);fire('eat');fire('cooktog');l.food=null;
@@ -1592,8 +1602,8 @@ function act(a){
   if(k==='carview'){DR.view=DR.view==='in'?'out':'in';return render()}
   if(k==='mail')return doAt(doorX()-80,()=>{const g=Gm();if(g.mail>0){g.mail--;sfx('rustle');l.letter=genMail();fire('mail')}render();$('panel').scrollTop=0});
   if(use3()){
-    if(k==='sleep')return walkTo(8,1.85,3,()=>{G3.act='lie';if(state.house.time==='dag')state.house.time='kveld';need('energi',100);fire('sleep');msg=nm+' sover. Trykk «Stå opp» når det er morgen.';render()});
-    if(k==='wake'){endAct(true);state.house.time='dag';msg='God morgen! En ny dag.';return render()}
+    if(k==='sleep')return walkTo(8,1.85,3,()=>{G3.act='lie';if(p.kid.age>0)G3.kbed=true;if(p.pet.type!=='none')G3.petBed=true;if(state.house.time==='dag')state.house.time='kveld';need('energi',100);fire('sleep');msg=nm+' sover. Trykk «Stå opp» når det er morgen.';render()});
+    if(k==='wake'){endAct(true);G3.kbed=false;G3.petBed=false;state.house.time='dag';msg='God morgen! En ny dag.';return render()}
     if(k==='sit')return walkTo(7.1,1.78,0,()=>{G3.seat=null;G3.act='sit';need('humor',5);msg=nm+' slapper av i sofaen.';render()});
     if(k==='tv'){if(!state.house.inne.stue.items.tv){msg='Du har ingen TV. Sett inn en under Hus.';return render()}l.tv=!l.tv;if(!l.tv){msg='TV-en er slått av.';return render()}
       need('humor',20);fire('tv');msg=nm+' ser på TV.';render();return walkTo(7.1,1.78,0,()=>{G3.act='sit';render()})}
@@ -1696,7 +1706,7 @@ function lifeBody(){
   const g3=use3(),r3=g3?room3():null,rk=g3?r3[0]:l.room;
   const i=ROOMS.findIndex(r=>r[0]===l.room),A={gang:'',stue:ab('tv',l.tv?'Slå av TV-en':'Se på TV',1),kjokken:ab('cook','Lag mat')+(l.food?ab('eat','Spis '+esc(l.food.name.toLowerCase()),1):''),
     soverom:ab('sleep',state.house.time==='dag'?'Legg deg':'Stå opp',1),bad:ab('shower','Ta en dusj',1)}[rk];
-  const A3=!g3?'':rk==='bad'?badActs(state.house.inne.bad.items):{stue:ab('sit','Sett deg i sofaen',1)+ab('tv',l.tv?'Slå av TV-en':'Se på TV',1),soverom:(G3.act==='lie'?ab('wake','Stå opp'):ab('sleep','Legg deg',1))+ab('wardrobe','Åpne klesskapet',1)}[rk]||A;
+  const p0=P(),A3=!g3?'':rk==='bad'?badActs(state.house.inne.bad.items):{stue:ab('sit','Sett deg i sofaen',1)+ab('tv',l.tv?'Slå av TV-en':'Se på TV',1),soverom:(G3.act==='lie'?ab('wake','Stå opp'):ab('sleep','Legg deg',1))+ab('wardrobe','Åpne klesskapet',1)+(p0.kid.age>0?ab('kidbed',G3.kbed?'Vekk '+esc(p0.kid.name):'Legg '+esc(p0.kid.name)+' i senga',1):'')}[rk]||A;
   if(g3&&G3.ward)return head('Klesskapet','Bytt klær','Det du velger, får hun på seg med en gang.')+`<div class="acts">${ab('wardone','Ferdig')}</div>`+klaerHTML();
   if(g3)return head('Hjemme',r3[1],'Styr med pilene i bildet, eller trykk på gulvet.')
     +row('Gå til',ab('goto:gang','Gang',1)+ab('goto:stue','Stue',1)+ab('goto:kjokken','Kjøkken',1)+ab('goto:oppe',r3[2]?'Gang oppe':'Opp trappa',1)+ab('goto:soverom','Soverom',1)+ab('goto:bad','Bad',1)+ab('out','Gå ut',1))
