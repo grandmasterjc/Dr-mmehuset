@@ -999,11 +999,11 @@ function faceTex(){
 }
 function lathe(g,pts,c,sx,sz){const m=new THREE.Mesh(new THREE.LatheGeometry(pts.map(q=>new THREE.Vector2(q[0],q[1])),26),m3(c,'d'));m.scale.set(sx||1,1,sz||.62);return fin(g,m)}
 function buildMe(tg){
-  const g=tg||G3.me;clr(g);const s0=P(),s=!tg&&G3.towel?Object.assign({},s0,{dress:'handkle',dressColor:'#f6f2ea',outer:'none',shoes:'barfot',acc:Object.assign({},s0.acc,{veske:false,solbriller:false})}):s0,f=Ft(),sk=s.skin,T=THREE,bw=f.bx;
+  const g=tg||G3.me;clr(g);const s0=P(),boy=Ft().bx>=1.1,s=!tg&&G3.towel?Object.assign({},s0,{dress:'none',top:boy?'ingen':'singlet',topColor:'#2f7fb8',bottom:boy?'shorts':'badebunn',bottomColor:boy?'#2f7fb8':'#2f7fb8',outer:'none',shoes:'barfot',acc:Object.assign({},s0.acc,{veske:false,solbriller:false})}):s0,f=Ft(),sk=s.skin,T=THREE,bw=f.bx;
   const grp=(par,x,y,z)=>{const q=new T.Group();q.position.set(x,y,z||0);par.add(q);return q};
   const bd=grp(g,0,0),tr=grp(bd,0,1.0),ti=grp(tr,0,-1.0),rig={bd:bd,tr:tr,hip:[],knee:[],foot:[],arm:[],elbow:[]};
   const dress=s.dress!=='none',pants=!dress&&(s.bottom==='jeans'||s.bottom==='vide'),shorts=!dress&&s.bottom==='shorts',wide=pants&&s.bottom==='vide';
-  const jacket=s.outer!=='none',long=jacket||(!dress&&/genser|skjorte/.test(s.top)),bare=!jacket&&(dress?s.dress!=='enkel':s.top==='singlet'),big=!dress&&/genser/.test(s.top);
+  const jacket=s.outer!=='none',long=jacket||(!dress&&/genser|skjorte/.test(s.top)),bare=!jacket&&(dress?s.dress!=='enkel':s.top==='singlet'||s.top==='ingen'),big=!dress&&/genser/.test(s.top);
   const ic=dress?s.dressColor:s.topColor,tc=jacket?s.outerColor:ic,lc=pants?s.bottomColor:sk,sc=s.shoeColor;
   [-1,1].forEach(d=>{const hp=grp(bd,d*.088,.88);Cy(hp,0,-.42,0,0,wide?.092:.064,lc,wide?.098:.09);if(shorts)Cy(hp,0,-.17,.02,0,.096,s.bottomColor,.1);
     const kn=grp(hp,0,-.42);Sp(kn,0,0,0,wide?.092:.064,lc);Cy(kn,0,-.4,0,0,wide?.1:.042,lc,wide?.092:.062);if(!wide){const cf=Sp(kn,0,-.15,-.012,1,lc);cf.scale.set(.06,.13,.064)}
@@ -1016,13 +1016,14 @@ function buildMe(tg){
       if(s.shoes==='sneakers'){[.02,.05,.08].forEach(z=>B(ft,-.03,.03,.012-z*.25,.02-z*.25,z,z+.012,'#fbfaf7'));const tcap=Sp(ft,0,-.02,.135,1,'#f2f0ec');tcap.scale.set(.05,.03,.04)}}
     rig.hip.push(hp);rig.knee.push(kn);rig.foot.push(ft)});
   if(dress){const q={enkel:[.5,.25],sommer:[.62,.4],galla:[.98,.42],handkle:[.36,.22]}[s.dress]||[.5,.25];lathe(bd,[[q[1],1.03-q[0]],[q[1]*.62,1.03-q[0]*.55],[.2,.9],[.172,.97],[.15,1.03]],s.dressColor,bw,.8)}
+  else if(s.bottom==='badebunn')lathe(bd,[[.12,.84],[.165,.9],[.17,.97],[.15,1.035]],s.bottomColor,bw,.66);
   else if(pants||shorts){lathe(bd,[[.1,.76],[.176,.83],[.186,.92],[.166,1.0],[.15,1.035]],s.bottomColor,bw,.66);
     if(s.bottom==='jeans'||shorts){const b=Cy(bd,0,1.0,1.03,0,.156*bw,'#3a2a20');b.scale.z=.7;B(bd,-.018,.018,1.002,1.028,.1,.112,'#d4a843','s');[-1,1].forEach(d=>B(bd,d*.1-.035,d*.1+.035,.9,.97,-.118,-.108,shade(s.bottomColor,-.15)))}}
   else{const hh=s.bottom==='midi'?.72:.36,R=s.bottom==='midi'?.37:.3;lathe(bd,[[R,1.03-hh],[R*.75,1.03-hh*.5],[.172,.97],[.15,1.03]],s.bottomColor,bw,.8)}
   lathe(ti,[[.142,1.0],[.128,1.12],[.165,1.3],[.176,1.4],[.06,1.47]],sk,bw,.6);
   const k=big?1.07:1,gp=bare?[[.16,.97],[.143,1.12],[.18,1.3],[.178,1.375]]:[[.16*k,big?.93:.97],[.143*k,1.12],[.18*k,1.3],[.19*k,1.41],[.066,1.478]];
-  lathe(ti,gp,ic,bw,.62);
-  if(bare&&s.dress!=='galla'&&s.dress!=='handkle')[-1,1].forEach(d=>B(ti,d*.09*bw-.012,d*.09*bw+.012,1.36,1.468,-.09,.09,ic));
+  if(s.top!=='ingen')lathe(ti,gp,ic,bw,.62);
+  if(bare&&s.top!=='ingen'&&s.dress!=='galla'&&s.dress!=='handkle')[-1,1].forEach(d=>B(ti,d*.09*bw-.012,d*.09*bw+.012,1.36,1.468,-.09,.09,ic));
   if(jacket){lathe(ti,[[.172,s.outer==='blazer'?.9:.99],[.156,1.12],[.193,1.3],[.203,1.41],[.075,1.482]],tc,bw,.63);B(ti,-.05,.05,1.0,1.45,.09,.134,ic);
     [-1,1].forEach(d=>{const m=B(ti,d*.07-.028,d*.07+.028,1.2,1.45,.118,.134,shade(tc,-.18));m.rotation.z=d*.16});
     if(s.outer==='dongeri')[1.08,1.2,1.32].forEach(y=>Sp(ti,.058,y,.132,.009,'#c9a36a','s'))}
