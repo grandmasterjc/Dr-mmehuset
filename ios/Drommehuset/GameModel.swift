@@ -11,7 +11,15 @@ final class GameModel: ObservableObject {
     @Published var gift: GiftResult? = nil
     @Published var shaking = false
 
-    init() { s = Store.load() }
+    init() {
+        s = Store.load()
+        // brukes av den automatiske testen på GitHub for å ta skjermbilder av ulike faner
+        let a = ProcessInfo.processInfo.arguments
+        if let i = a.firstIndex(of: "-tab"), i + 1 < a.count { tab = a[i + 1] }
+        if let i = a.firstIndex(of: "-husvis"), i + 1 < a.count { s.house.view = a[i + 1] }
+        if let i = a.firstIndex(of: "-rom"), i + 1 < a.count { s.house.inne.rom = a[i + 1] }
+        if let i = a.firstIndex(of: "-tid"), i + 1 < a.count { s.house.time = a[i + 1] }
+    }
 
     var me: Look { s.me }
 

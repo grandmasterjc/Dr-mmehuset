@@ -9,6 +9,11 @@ enum Pal {
     static let blush = ["#e58a8a", "#d9806a", "#c76b8a"]
     static let hair = ["#1c1513", "#3b2416", "#6a4226", "#9a6b3f", "#c9a063", "#e8d5a8", "#9c4a25", "#7a2337"]
     static let cloth = ["#f5f3ee", "#1f1f24", "#8c8f96", "#d8c3a5", "#34507a", "#7fa3c7", "#9b3b47", "#c97b84", "#5d7a5e", "#c9a227"]
+    static let wall = ["#f4f1ea", "#2e3338", "#b9b2a6", "#8b2f2a", "#d9c36a", "#56707f", "#7a5a3e"]
+    static let roof = ["#2b2d31", "#6d747b", "#5a3a32", "#8a3b2e"]
+    static let door = ["#1f1f24", "#f4f1ea", "#8b2f2a", "#34507a", "#5d7a5e", "#c9a227", "#7a5a3e"]
+    static let wallIn = ["#f4f1ea", "#e7ddd0", "#c7b299", "#d7dfd6", "#8a9a84", "#cfd9e3", "#e9cfd0", "#3a4250"]
+    static let furn = ["#d8c3a5", "#f4f1ea", "#8c8f96", "#2e3338", "#34507a", "#5d7a5e", "#9b3b47", "#c97b84", "#c9a227"]
     static let gold = "#d4a843"
     static let rosa = "#e88fb5"
     static let blaa = "#5b7fd1"
@@ -39,7 +44,22 @@ func js(_ x: Double) -> String {
     return "\(x)"
 }
 func js(_ x: Int) -> String { String(x) }
-func fx(_ x: Double, _ d: Int) -> String { String(format: "%.\(d)f", x) }
+/// Som JavaScripts toFixed: runder halve opp (bort fra null).
+func fx(_ x: Double, _ d: Int) -> String {
+    let p = pow(10.0, Double(d)), y = x * p
+    if abs(y - y.rounded(.towardZero)) == 0.5 {
+        let r = y.rounded(.toNearestOrAwayFromZero) / p
+        return String(format: "%.\(d)f", r)
+    }
+    return String(format: "%.\(d)f", x)
+}
+
+/// Samme tilfeldige tall-rekke som rng() i nettversjonen (gir samme kunstverk og mønstre).
+struct Rng {
+    var s: Double
+    init(_ seed: Double) { s = seed }
+    mutating func next() -> Double { s = (s * 16807).truncatingRemainder(dividingBy: 2147483647); return s / 2147483647 }
+}
 
 struct Feat: Codable, Equatable {
     var face: String

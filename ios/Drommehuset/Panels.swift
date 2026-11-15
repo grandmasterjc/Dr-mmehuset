@@ -171,3 +171,85 @@ struct SnartPanel: View {
         }
     }
 }
+
+struct HusPanel: View {
+    @EnvironmentObject var m: GameModel
+    static let rooms = opts([("gang", "Gang"), ("stue", "Stue"), ("kjokken", "Kjøkken"), ("soverom", "Soverom"), ("bad", "Bad")])
+    static let items: [String: [Opt]] = [
+        "stue": opts([("lampe", "Gulvlampe"), ("bord", "Salongbord"), ("tv", "TV"), ("bokhylle", "Bokhylle"), ("plante", "Plante"), ("gardiner", "Gardiner")]),
+        "soverom": opts([("nattbord", "Nattbord"), ("skrivebord", "Skrivebord"), ("speil", "Speil"), ("lyslenke", "Lyslenke"), ("plante", "Plante"), ("gardiner", "Gardiner")]),
+        "kjokken": opts([("kjoleskap", "Kjøleskap"), ("spisebord", "Spisebord"), ("plante", "Urter"), ("gardiner", "Gardiner")]),
+        "bad": opts([("speil", "Speil"), ("handkle", "Håndklær"), ("badekar", "Badekar"), ("plante", "Plante")]),
+        "gang": opts([("knagger", "Knagger"), ("skohylle", "Skohylle"), ("speil", "Speil"), ("kommode", "Kommode"), ("plante", "Plante")]),
+    ]
+    var body: some View {
+        let h = m.s.house
+        VStack(alignment: .leading, spacing: 16) {
+            OptionRow(title: "Vis") {
+                Chip(label: "Utenfor", on: h.view != "inne") { m.s.house.view = "ute" }
+                Chip(label: "Innendørs", on: h.view == "inne") { m.s.house.view = "inne" }
+            }
+            if h.view == "inne" { inside } else { outside }
+            OptionRow(title: "Tid på døgnet") {
+                Chip(label: "Dag", on: h.time == "dag") { m.s.house.time = "dag" }
+                Chip(label: "Kveld", on: h.time == "kveld") { m.s.house.time = "kveld" }
+            }
+        }
+    }
+
+    var outside: some View {
+        let h = m.s.house
+        return VStack(alignment: .leading, spacing: 16) {
+            OptionRow(title: "Hustype") {
+                ForEach(opts([("klassisk", "Klassisk"), ("moderne", "Moderne"), ("villa", "Villa"), ("hytte", "Hytte"), ("byhus", "Byhus"), ("slott", "Slott")])) { t in
+                    Chip(label: t.label, on: h.type == t.id) { m.s.house.type = t.id }
+                }
+            }
+            OptionRow(title: "Vegg") { ForEach(Pal.wall + m.s.extra.wall, id: \.self) { c in Swatch(color: c, on: h.wall == c) { m.s.house.wall = c } } }
+            OptionRow(title: "Tak") { ForEach(Pal.roof, id: \.self) { c in Swatch(color: c, on: h.roofColor == c) { m.s.house.roofColor = c } } }
+            OptionRow(title: "Vinduskarmer") {
+                Chip(label: "Hvite", on: h.trim == "hvit") { m.s.house.trim = "hvit" }
+                Chip(label: "Svarte", on: h.trim == "svart") { m.s.house.trim = "svart" }
+            }
+            OptionRow(title: "Dør") { ForEach(Pal.door, id: \.self) { c in Swatch(color: c, on: h.door == c) { m.s.house.door = c } } }
+            OptionRow(title: "Hage") {
+                Chip(label: "Tre", on: h.garden.tre) { m.s.house.garden.tre.toggle() }
+                Chip(label: "Hekk", on: h.garden.hekk) { m.s.house.garden.hekk.toggle() }
+                Chip(label: "Blomsterbed", on: h.garden.bed) { m.s.house.garden.bed.toggle() }
+                Chip(label: "Utelys", on: h.garden.lys) { m.s.house.garden.lys.toggle() }
+                Chip(label: "Terrasse", on: h.garden.terrasse) { m.s.house.garden.terrasse.toggle() }
+                Chip(label: "Bil", on: h.garden.bil) { m.s.house.garden.bil.toggle() }
+                let lk = !m.s.unlocked.basseng
+                Chip(label: "Basseng", on: h.garden.basseng, locked: lk, price: Shop.item("basseng")?.price) {
+                    if lk { m.ask = "basseng" } else { m.s.house.garden.basseng.toggle() }
+                }
+            }
+        }
+    }
+
+    var inside: some View {
+        let rm = m.s.house.inne.rom, r = m.s.house.inne[rm]
+        let mainLabel = ["stue": "Sofa", "soverom": "Sengetøy", "kjokken": "Skap", "bad": "Skap og håndklær", "gang": "Tekstiler"][rm] ?? "Møbler"
+        let rugLabel = rm == "bad" ? "Badematte" : rm == "gang" ? "Dørmatte" : "Gulvteppe"
+        let arts = opts([("none", "Ingen"), ("abstrakt", "Abstrakt"), ("landskap", "Landskap")]) + m.s.extra.art.enumerated().map { Opt(id: $0.element, label: "Kunst \($0.offset + 1)") }
+        return VStack(alignment: .leading, spacing: 16) {
+            OptionRow(title: "Rom") { ForEach(Self.rooms) { o in Chip(label: o.label, on: rm == o.id) { m.s.house.inne.rom = o.id } } }
+            OptionRow(title: "Vegg") { ForEach(Pal.wallIn + m.s.extra.wall, id: \.self) { c in Swatch(color: c, on: r.wall == c) { m.s.house.inne[rm].wall = c } } }
+            OptionRow(title: "Gulv") {
+                ForEach(opts([("parkett", "Lys parkett"), ("mork", "Mørk parkett"), ("fliser", "Fliser"), ("teppe", "Teppe")])) { f in
+                    Chip(label: f.label, on: r.floor == f.id) { m.s.house.inne[rm].floor = f.id }
+                }
+            }
+            OptionRow(title: mainLabel) { ForEach(Pal.furn + m.s.extra.furn, id: \.self) { c in Swatch(color: c, on: r.main == c) { m.s.house.inne[rm].main = c } } }
+            OptionRow(title: rugLabel) { ForEach(["none"] + Pal.furn + m.s.extra.furn, id: \.self) { c in Swatch(color: c, on: r.rug == c) { m.s.house.inne[rm].rug = c } } }
+            if rm != "kjokken" && rm != "bad" {
+                OptionRow(title: "Bilde på veggen") { ForEach(arts) { a in Chip(label: a.label, on: r.art == a.id) { m.s.house.inne[rm].art = a.id } } }
+            }
+            OptionRow(title: "Møbler og pynt") {
+                ForEach(Self.items[rm] ?? []) { it in
+                    Chip(label: it.label, on: r.has(it.id)) { m.s.house.inne[rm].items[it.id] = !r.has(it.id) }
+                }
+            }
+        }
+    }
+}

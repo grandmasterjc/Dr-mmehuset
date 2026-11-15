@@ -52,7 +52,9 @@ struct Needs: Codable, Equatable { var sult = 70.0, energi = 80.0, hygiene = 75.
 struct Game: Codable, Equatable {
     var coins = 80
     var free = 0
+    var mail = 1
     var xp = 0
+    var tasks = Tasks()
     var needs = Needs()
 }
 
@@ -98,6 +100,68 @@ struct Extra: Codable, Equatable {
     var cloth: [String] = [], hair: [String] = [], wall: [String] = [], furn: [String] = [], band: [String] = [], art: [String] = []
 }
 
+struct Room: Codable, Equatable {
+    var wall: String, floor: String, main: String, rug: String, art: String
+    var items: [String: Bool]
+    func has(_ k: String) -> Bool { items[k] ?? false }
+}
+
+struct Inne: Codable, Equatable {
+    var rom = "stue"
+    var stue = Room(wall: "#f4f1ea", floor: "parkett", main: "#8c8f96", rug: "#d8c3a5", art: "abstrakt", items: ["plante": true, "lampe": true, "bord": true, "tv": false, "bokhylle": false, "gardiner": true])
+    var soverom = Room(wall: "#e9cfd0", floor: "parkett", main: "#c97b84", rug: "none", art: "landskap", items: ["plante": true, "nattbord": true, "skrivebord": false, "speil": false, "lyslenke": true, "gardiner": true])
+    var kjokken = Room(wall: "#f4f1ea", floor: "fliser", main: "#5d7a5e", rug: "none", art: "none", items: ["kjoleskap": true, "spisebord": true, "plante": true, "gardiner": false])
+    var bad = Room(wall: "#cfd9e3", floor: "fliser", main: "#34507a", rug: "#f4f1ea", art: "none", items: ["speil": true, "handkle": true, "badekar": true, "plante": true])
+    var gang = Room(wall: "#e7ddd0", floor: "parkett", main: "#9b3b47", rug: "#8c8f96", art: "landskap", items: ["knagger": true, "skohylle": true, "speil": true, "kommode": true, "plante": false])
+    subscript(_ k: String) -> Room {
+        get { switch k { case "soverom": return soverom; case "kjokken": return kjokken; case "bad": return bad; case "gang": return gang; default: return stue } }
+        set { switch k { case "soverom": soverom = newValue; case "kjokken": kjokken = newValue; case "bad": bad = newValue; case "gang": gang = newValue; default: stue = newValue } }
+    }
+}
+
+struct Garden: Codable, Equatable {
+    var tre = true, hekk = true, bed = true, lys = false, terrasse = false, bil = false, basseng = false
+}
+
+struct House: Codable, Equatable {
+    var type = "klassisk", wall = "#f4f1ea", roofColor = "#2b2d31", trim = "hvit", door = "#34507a", time = "dag", view = "ute"
+    var inne = Inne()
+    var garden = Garden()
+}
+
+struct Pos: Codable, Equatable { var x = 8.0, z = 3.1, y = 0.0 }
+
+struct Food: Codable, Equatable { var key = "", name = "", q = "", ok = false }
+
+struct Letter: Codable, Equatable { var t = "", body: [String] = [], sign = "", note = "" }
+
+struct Shopping: Codable, Equatable { var type = "katt", color = "#e08a3c", name = "" }
+
+struct Life: Codable, Equatable {
+    var wash = false
+    var crew: [String: Bool] = ["f0": false, "f1": false, "f2": false, "f3": false, "f4": false, "f5": false, "f6": false, "f7": false, "mamma": false, "pappa": false, "bestemor": false, "bestefar": false, "kid": true, "pet": true]
+    var letter: Letter? = nil
+    var pending = "", lastKind = ""
+    var bags: [String: String] = [:]
+    var last: [String: String] = [:]
+    var cx = 300.0
+    var car = "#39475a"
+    var shop = Shopping()
+    var place = "hjem", room = "stue"
+    var x = 320.0
+    var friend = 1
+    var dest = "oslo"
+    var line = 0
+    var tv = false
+    var food: Food? = nil
+    var h3 = Pos()
+    var f3 = Pos(x: 0.9, z: 3.1, y: 0)
+    var stamps: [String: Bool] = ["oslo": false, "bergen": false, "tromso": false, "lofoten": false, "preikestolen": false, "paris": false, "london": false, "roma": false, "newyork": false, "tokyo": false, "egypt": false]
+    var said = "", meSaid = ""
+}
+
+struct Tasks: Codable, Equatable { var a = "cookperfect", b = "friend", c = "stairs" }
+
 struct GameState: Codable, Equatable {
     var v = 1
     var cur = 0
@@ -105,8 +169,11 @@ struct GameState: Codable, Equatable {
     var game = Game()
     var unlocked = Unlocked()
     var extra = Extra()
+    var house = House()
+    var life = Life()
     var opened = 0
     var snd = 2
+    var rain = false
 }
 
 enum People {

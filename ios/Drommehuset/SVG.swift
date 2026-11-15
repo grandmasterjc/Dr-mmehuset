@@ -25,6 +25,8 @@ enum PathOp: Equatable {
 
 final class SVGNode {
     let name: String
+    /// alle elementer med id, bare satt på rotnoden
+    var ids: [String: SVGNode] = [:]
     var attrs: [String: String]
     var children: [SVGNode] = []
     var text = ""
@@ -84,6 +86,7 @@ enum SVG {
             if let t = attrs["transform"] { node.transform = parseTransform(t) }
             if name == "path", let d = attrs["d"] { node.ops = parsePath(d) }
             stack.last!.children.append(node)
+            if let id = attrs["id"] { root.ids[id] = node }
             if !selfClose { stack.append(node) }
         }
         return root

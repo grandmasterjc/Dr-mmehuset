@@ -12,30 +12,37 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
-      - name: Vis Xcode-versjon
-        run: xcodebuild -version
       - name: Bygg for simulator
         run: |
           set -o pipefail
           xcodebuild -project ios/Drommehuset.xcodeproj -target Drommehuset -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO SYMROOT=$PWD/build build 2>&1 | tee build.log | grep -E "error:|BUILD (SUCCEEDED|FAILED)" || true
           grep -q "BUILD SUCCEEDED" build.log
-      - name: Start appen i simulator og ta skjermbilder
+      - name: Feil fra byggingen
+        if: failure()
+        run: grep -E "error:" -A3 build.log | head -150 || true
+      - name: Skjermbilder i simulator
         run: |
-          UDID=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone 16')))")
-          xcrun simctl boot "$UDID"
-          xcrun simctl bootstatus "$UDID" -b
-          xcrun simctl install "$UDID" build/Debug-iphonesimulator/Drommehuset.app
-          xcrun simctl launch "$UDID" com.grandmasterjc.drommehuset
-          sleep 6
+          pick() { xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('$1')))"; }
           mkdir -p shots
-          xcrun simctl io "$UDID" screenshot shots/iphone.png
-          IPAD=$(xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPad')))")
-          xcrun simctl boot "$IPAD"
-          xcrun simctl bootstatus "$IPAD" -b
-          xcrun simctl install "$IPAD" build/Debug-iphonesimulator/Drommehuset.app
-          xcrun simctl launch "$IPAD" com.grandmasterjc.drommehuset
-          sleep 6
-          xcrun simctl io "$IPAD" screenshot shots/ipad.png
+          shoot() { # enhet navn argumenter...
+            dev=$1; name=$2; shift 2
+            xcrun simctl terminate "$dev" com.grandmasterjc.drommehuset 2>/dev/null || true
+            xcrun simctl launch "$dev" com.grandmasterjc.drommehuset "$@"
+            sleep ${WAIT:-5}
+            xcrun simctl io "$dev" screenshot "shots/$name.png"
+          }
+          P=$(pick "iPhone 16"); xcrun simctl boot "$P"; xcrun simctl bootstatus "$P" -b
+          xcrun simctl install "$P" build/Debug-iphonesimulator/Drommehuset.app
+          shoot "$P" iphone-sminke -tab sminke
+          shoot "$P" iphone-hus-ute -tab hus -husvis ute
+          shoot "$P" iphone-hus-stue -tab hus -husvis inne -rom stue -tid kveld
+          shoot "$P" iphone-hus-kjokken -tab hus -husvis inne -rom kjokken -tid dag
+          shoot "$P" iphone-barn -tab barn
+          WAIT=9 shoot "$P" iphone-liv -tab liv
+          I=$(pick "iPad"); xcrun simctl boot "$I"; xcrun simctl bootstatus "$I" -b
+          xcrun simctl install "$I" build/Debug-iphonesimulator/Drommehuset.app
+          shoot "$I" ipad-hus -tab hus -husvis ute
+          WAIT=9 shoot "$I" ipad-liv -tab liv
       - uses: actions/upload-artifact@v4
         with:
           name: skjermbilder
