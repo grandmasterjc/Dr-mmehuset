@@ -225,14 +225,14 @@ const DEF={v:3,tab:'sminke',cur:0,
       stue:{wall:WALLIN[0],floor:'parkett',main:FURN[2],rug:FURN[0],art:'abstrakt',items:{plante:true,lampe:true,bord:true,tv:false,bokhylle:false,gardiner:true}},
       soverom:{wall:WALLIN[6],floor:'parkett',main:FURN[7],rug:'none',art:'landskap',items:{plante:true,nattbord:true,skrivebord:false,speil:false,lyslenke:true,gardiner:true}},
       kjokken:{wall:WALLIN[0],floor:'fliser',main:FURN[5],rug:'none',art:'none',items:{kjoleskap:true,spisebord:true,plante:true,gardiner:false}},
-      bad:{wall:WALLIN[5],floor:'fliser',main:FURN[4],rug:FURN[1],art:'none',items:{speil:true,handkle:true,badekar:false,plante:true}},
+      bad:{wall:WALLIN[5],floor:'fliser',main:FURN[4],rug:FURN[1],art:'none',items:{speil:true,handkle:true,badekar:true,plante:true}},
       gang:{wall:WALLIN[1],floor:'parkett',main:FURN[6],rug:FURN[2],art:'landskap',items:{knagger:true,skohylle:true,speil:true,kommode:true,plante:false}}},
     garden:{tre:true,hekk:true,bed:true,lys:false,terrasse:false,bil:false,basseng:false}},
   unlocked:{solbriller:false,veske:false,skinnjakke:false,gallakjole:false,smykker:false,basseng:false,rosa:false,blaa:false,lue:false,gull:false},
   game:{coins:80,free:0,mail:1,xp:0,tasks:{a:'cookperfect',b:'friend',c:'stairs'},needs:{sult:70,energi:80,hygiene:75,humor:70}},
   life:{wash:false,crew:{f0:false,f1:false,f2:false,f3:false,f4:false,f5:false,f6:false,f7:false,mamma:false,pappa:false,bestemor:false,bestefar:false},letter:null,pending:'',lastKind:'',bags:{o:'',m:'',c:'',pc:'',bm:'',mt:'',mp:'',mr:'',ad:'',bl:'',r1:'',r2:'',r3:''},cx:300,car:'#39475a',shop:{type:'katt',color:'#e08a3c',name:''},place:'hjem',room:'stue',x:320,friend:1,dest:'oslo',line:0,tv:false,food:null,
     h3:{x:8,z:3.1,y:0},f3:{x:.9,z:3.1,y:0},stamps:{oslo:false,bergen:false,tromso:false,lofoten:false,preikestolen:false,paris:false,london:false,roma:false,newyork:false,tokyo:false,egypt:false}},
-  rain:false,opened:0};
+  rain:false,opened:0,tubv:0};
 
 function merge(d,s){const o={};for(const k in d){const v=s&&s[k];
   o[k]=(d[k]&&typeof d[k]==='object')?merge(d[k],v&&typeof v==='object'?v:{}):(v==null?d[k]:v)}return o}
@@ -242,6 +242,7 @@ function load(extra){let s=null;
   if(extra&&(extra.v===3||extra.v===2))s=up(extra);if(!s||s.v!==3)s=null;
   const st=merge(DEF,s);st.people=START.map((d,i)=>merge(merge(LOOK,d),s&&s.people&&s.people[i]));
   if(!(st.cur>=0&&st.cur<NP))st.cur=0;
+  if(!st.tubv){st.house.inne.bad.items.badekar=true;st.tubv=1}
   st.extra={};['cloth','hair','wall','furn','band','art'].forEach(k=>{const a=s&&s.extra&&s.extra[k];st.extra[k]=Array.isArray(a)?a.filter(v=>typeof v==='string'&&/^[#g][0-9a-f]{1,6}$/i.test(v)).slice(0,14):[]});return st}
 function save(){try{localStorage.setItem('studio-ida-v3',JSON.stringify(state))}catch(e){}}
 
@@ -880,7 +881,7 @@ function friendHouse(i){
     gang:{wall:q[0],floor:F.floor,main:q[1],rug:'#8c8f96',art:'landskap',items:{knagger:true,skohylle:true,speil:true,kommode:true,plante:true}},
     kjokken:{wall:'#f4f1ea',floor:'fliser',main:q[1],rug:'none',art:'none',items:{kjoleskap:true,spisebord:true,plante:true,gardiner:true}},
     soverom:{wall:q[0],floor:F.floor,main:q[1],rug:F.rug,art:F.art,items:{plante:true,nattbord:true,skrivebord:true,speil:true,lyslenke:i%2===0,gardiner:true}},
-    bad:{wall:'#cfd9e3',floor:'fliser',main:q[1],rug:'#f4f1ea',art:'none',items:{speil:true,handkle:true,badekar:i%2===1,plante:true}}}};
+    bad:{wall:'#cfd9e3',floor:'fliser',main:q[1],rug:'#f4f1ea',art:'none',items:{speil:true,handkle:true,badekar:true,plante:true}}}};
 }
 function ctex(key,draw,rx,ry){
   if(!G3.tex[key]){const c=document.createElement('canvas');c.width=c.height=256;draw(c.getContext('2d'));const t=new THREE.CanvasTexture(c);
