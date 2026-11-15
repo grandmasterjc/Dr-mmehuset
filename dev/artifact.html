@@ -187,7 +187,7 @@ const LOOK={name:'',skin:SKIN[1],eyes:EYES[0],lips:'none',gloss:false,shadow:'no
   outer:'none',outerColor:CLOTH[5],shoes:'sneakers',shoeColor:CLOTH[0],
   acc:{halskjede:false,oredobber:false,solbriller:false,veske:false,smykker:false,lue:false},oops:null,
   pet:{type:'none',name:'',color:'#e08a3c',glad:70,collar:'none',leash:false},
-  kid:{age:-1,name:'',xp:0,glad:70,girl:true,look:{skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''}}};
+  kid:{age:-1,name:'',xp:0,glad:70,girl:true,look:{freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''}}};
 const START=[
  {name:'Nora'},
  {name:'Amina',skin:SKIN[4],hair:'kroller',hairColor:HAIR[0],top:'genser',topColor:CLOTH[9],bottom:'vide',bottomColor:CLOTH[1],shoes:'boots',shoeColor:CLOTH[1]},
@@ -381,15 +381,16 @@ function jacket(){
   return mir(p)+z+longSleeve(c,28,23);
 }
 function girl(){
-  const s=P(),sk=s.skin,skd=shade(sk,-.14);let o='<ellipse cx="150" cy="598" rx="74" ry="6" fill="#000" opacity=".12"/>';
-  o+=hairBack()+`<g transform="translate(150 0) scale(${Ft().bx} 1) translate(-150 0)">`;
-  o+=mir(`<path d="M112 286L150 286L150 304Q149 380 147 420Q150 480 145 556L130 556Q122 480 122 420Q111 360 112 286Z" fill="${sk}"/>`+ln('M128 418Q134 424 141 419',skd,1.1)
+  const s=P(),sk=s.skin,skd=shade(sk,-.14),ch=!!s.child,H=ch?'<g transform="translate(150 104) scale(1.32) translate(-150 -104)">':'',He=ch?'</g>':'',Lg=ch?'<g transform="translate(0 290) scale(1 .72) translate(0 -290)">':'',Le=ch?'</g>':'';
+  const shadow='<ellipse cx="150" cy="598" rx="74" ry="6" fill="#000" opacity=".12"/>';let o='';
+  o+=H+hairBack()+He+`<g transform="translate(150 0) scale(${Ft().bx} 1) translate(-150 0)">`;
+  o+=Lg+mir(`<path d="M112 286L150 286L150 304Q149 380 147 420Q150 480 145 556L130 556Q122 480 122 420Q111 360 112 286Z" fill="${sk}"/>`+ln('M128 418Q134 424 141 419',skd,1.1)
     +`<path d="M129 552L146 552L148 580Q148 591 138 591Q126 591 127 580Z" fill="${sk}"/>`);
-  o+=shoes();
+  o+=shoes()+Le;
   o+=`<path d="M141 104L141 120Q138 130 110 136L116 182Q122 215 123 232Q113 262 112 290L188 290Q187 262 177 232Q178 215 184 182L190 136Q162 130 159 120L159 104Z" fill="${sk}"/>`
     +'<path d="M141 105Q150 119 159 105L159 104L141 104Z" fill="#000" opacity=".09"/>'+mir(ln('M127 139Q137 142.5 146 139.5',skd,1));
   let sl='';
-  if(s.dress==='none'){o+=bottom();const t=topParts();o+=t[0];sl=t[1]}
+  if(s.dress==='none'){o+=Lg+bottom()+Le;const t=topParts();o+=t[0];sl=t[1]}
   else{const t=dressParts();o+=t[0];sl=t[1]}
   if(s.oops==='flekk')o+='<path d="M158 196q9 -5 14 3q6 9 -3 15q-10 5 -15 -4q-4 -8 4 -14z" fill="#6b4423" opacity=".6"/><circle cx="151" cy="221" r="2.6" fill="#6b4423" opacity=".55"/>';
   if(s.acc.halskjede)o+=ln('M140 122Q150 138 160 122','#c9ccd1',.9)+'<circle cx="150" cy="130.5" r="1.8" fill="#e8eaee" stroke="#9aa0a8" stroke-width=".4"/>';
@@ -397,11 +398,12 @@ function girl(){
   if(s.acc.veske)o+=ln('M193 334Q207 304 221 334','#4a2f22',3)+'<rect x="185" y="332" width="45" height="36" rx="5" fill="#7a4b33" stroke="#4a2f22" stroke-width=".8"/><path d="M185 344Q207.5 356 230 344" stroke="#4a2f22" stroke-width="1" fill="none"/><rect x="204.5" y="347" width="6" height="5" rx="1" fill="#d4a843"/>';
   o+=mir(`<path d="M107 146L98 230" stroke="${sk}" stroke-width="21" stroke-linecap="round"/><path d="M98 230L93 304" stroke="${sk}" stroke-width="16.5" stroke-linecap="round"/>`)+sl+jacket()
     +mir(`<path d="M86 302Q84 322 88 336Q92 342 97 336Q101 320 100 302Z" fill="${sk}"/>`);
-  o+='</g>'+face();
+  o+='</g>'+H+face();
   if(s.acc.oredobber)o+=mir('<circle cx="119.3" cy="81" r="1.9" fill="#f6f2ea" stroke="#b9b2a6" stroke-width=".4"/>');
   if(s.acc.smykker)o+=mir('<circle cx="119" cy="86" r="5" fill="none" stroke="#d4a843" stroke-width="1.4"/>');
   if(s.acc.solbriller)o+=mir('<rect x="126.5" y="63" width="21.5" height="15.5" rx="6.5" fill="#161418" opacity=".93"/>'+ln('M130 67Q134 65 139 65.4','#fff',.9,.25)+ln('M126.8 68L119.6 70','#161418',1.4))+ln('M148 68Q150 66.4 152 68','#161418',1.4);
   o+=hairFront();
+  if(ch){o+=He;return shadow+'<g transform="translate(0 85)">'+o+'</g>'}
   if(s.acc.lue)o+='<circle cx="150" cy="20" r="8" fill="#c97b84"/><path d="M116 62C112 14 188 14 184 62Q150 48 116 62Z" fill="#9b3b47"/><path d="M114 58Q150 44 186 58L186 70Q150 56 114 70Z" fill="#7d2e39"/><path d="M124 56L125 66M136 52L136 62M150 50L150 60M164 52L164 62M176 56L175 66" stroke="#000" opacity=".15"/>';
   return o;
 }
@@ -1036,7 +1038,7 @@ function buildMe(tg){
     const hn=Sp(el,0,-.3,0,1,sk);hn.scale.set(.028,.052,.02);Sp(el,-d*.02,-.275,.014,.012,sk);
     if(i&&s.acc.veske){B(el,-.035,.035,-.6,-.37,-.14,.14,'#7a4b33');B(el,-.036,.036,-.47,-.44,-.142,.142,'#4a2f22');B(el,-.004,.004,-.37,-.3,-.1,-.09,'#4a2f22');B(el,-.004,.004,-.37,-.3,.09,.1,'#4a2f22')}
     rig.arm.push(ar);rig.elbow.push(el)});
-  const hd=grp(ti,0,1.64);Sp(hd,0,0,0,.13,sk);const jw=Sp(hd,0,-.045,.01,1,sk);jw.scale.set(.108,.1,.112);
+  const n0=ti.children.length;const hd=grp(ti,0,1.64);Sp(hd,0,0,0,.13,sk);const jw=Sp(hd,0,-.045,.01,1,sk);jw.scale.set(.108,.1,.112);
   const fm=new T.Mesh(new T.SphereGeometry(.1315,24,18,Math.PI/2-.79,1.58,1.168,1.462),new T.MeshStandardMaterial({map:faceTex(),roughness:.8}));hd.add(fm);
   const ns=Sp(hd,0,-.02,.128,1,sk);ns.scale.set(.012,.02,.014);
   [-1,1].forEach(d=>{const e=Sp(hd,d*.128,-.005,0,1,sk);e.scale.set(.02,.035,.022);if(s.acc.oredobber)Sp(hd,d*.132,-.035,.004,.01,'#f6f2ea','s');
@@ -1056,6 +1058,9 @@ function buildMe(tg){
   if(h==='kort'){const m=B(ti,-.12,.12,1.735,1.79,.03,.12,hc);m.rotation.x=.3}
   if(s.acc.lue){const m=Sp(ti,0,1.74,-.02,1,'#9b3b47');m.scale.set(.156,.12,.16);const bnd=Cy(ti,0,1.7,1.745,-.02,.158,'#7d2e39');Sp(ti,0,1.87,-.02,.04,'#c97b84')}
   if(s.acc.solbriller){B(ti,-.1,.1,1.635,1.675,.122,.14,'#161418','s');[-1,1].forEach(d=>B(ti,d*.1-.004,d*.1+.004,1.65,1.66,0,.13,'#161418'))}
+  rig.ty=1;
+  if(s.child){const pv=new T.Group();pv.position.set(0,1.6,0);ti.add(pv);g.updateMatrixWorld(true);ti.children.slice(n0,ti.children.length-1).forEach(c=>pv.attach(c));pv.scale.setScalar(1.3);
+    const d=.82*(1-.75);bd.children.forEach(c=>{c.position.y-=d});rig.hip.forEach(h=>{h.scale.y=.75});rig.ty=1-d}
   if(!tg)G3.rig=rig;g.scale.setScalar(f.h);return rig;
 }
 function buildPet(){
@@ -1123,11 +1128,12 @@ function poseRig(R,a,p,climb,now){
     R.hip[i].rotation.x=-.52*a*sn-(climb?.3*a*Math.max(0,cs):0);R.knee[i].rotation.x=a*(.1+.9*cl*Math.max(0,cs));R.foot[i].rotation.x=a*(.28*Math.max(0,sn)-.3*Math.max(0,-sn)*Math.max(0,cs));
     R.arm[i].rotation.x=.48*a*sn;R.arm[i].rotation.z=sd*(.07+.012*idle);R.elbow[i].rotation.x=-(.1+a*(.28+.3*Math.max(0,-sn)))});
   R.bd.position.y=a*(.02*Math.cos(2*p)-.018);R.bd.position.x=a*.014*Math.sin(p);R.bd.rotation.z=a*.025*Math.sin(p);
-  R.tr.rotation.y=-.13*a*Math.sin(p);R.tr.rotation.x=.05*a;R.tr.position.y=1+.004*idle;
+  R.tr.rotation.y=-.13*a*Math.sin(p);R.tr.rotation.x=.05*a;R.tr.position.y=(R.ty||1)+.004*idle;
 }
 function pose(now){if(G3.rig)poseRig(G3.rig,G3.amp,G3.ph,G3.climb,now)}
 function kidCands(girl){const q=state.people[state.cur],si=SKIN.indexOf(q.skin),hi=HAIR.indexOf(q.hairColor),sk=d=>SKIN[Math.max(0,Math.min(5,(si<0?1:si)+d))],hc=d=>HAIR[((hi<0?2:hi)+d+8)%6];
-  return [{skin:q.skin,eyes:q.eyes,hairColor:q.hairColor,hair:girl?'hestehale':'kort'},{skin:sk(1),eyes:EYES[0],hairColor:hc(1),hair:girl?'fletter':'kroller'},{skin:sk(-1),eyes:EYES[3],hairColor:hc(3),hair:girl?'lob':'kort'},{skin:sk(2),eyes:EYES[2],hairColor:hc(-1),hair:girl?'kroller':'kort'}]
+  const ey=d=>EYES[(Math.max(0,EYES.indexOf(q.eyes))+d)%EYES.length];
+  return [{skin:sk(0),eyes:ey(1),hairColor:hc(2),hair:girl?'hestehale':'kort',freckles:true},{skin:sk(1),eyes:ey(2),hairColor:hc(1),hair:girl?'fletter':'kroller'},{skin:sk(-1),eyes:ey(3),hairColor:hc(4),hair:girl?'lob':'kort'},{skin:sk(2),eyes:ey(4),hairColor:hc(-1),hair:girl?'kroller':'kort'}]
     .map((c,i)=>Object.assign(c,{top:'tskjorte',topColor:girl?['#c97b84','#c9a227','#7fa3c7','#5d7a5e'][i]:['#7fa3c7','#5d7a5e','#c9a227','#9b3b47'][i],bottom:girl?'skjort':'shorts',bottomColor:girl?'#9b3b47':'#34507a',shoes:'sneakers',shoeColor:'#f5f3ee'}))}
 function kidFace(L){const q=state.people[state.cur],k=q.kid;const sv=q.kid;q.kid=Object.assign({},k,{look:Object.assign({},k.look||{},L)});dl=kidLook();const g=girl();dl=null;q.kid=sv;
   return `<svg viewBox="108 20 84 96" aria-hidden="true">${GDEFS}${g}</svg>`}
@@ -1156,8 +1162,8 @@ function barnHTML(){
     +row('Underdel',chips(b+'bottom',[['jeans','Bukse'],['shorts','Shorts'],['skjort','Skjørt']]))+(d?'':row('Farge på underdelen',sw(b+'bottomColor',CL())))
     +row('Sko',chips(b+'shoes',[['sneakers','Joggesko'],['ballerina','Ballerinasko'],['boots','Støvler']]))+row('Farge på skoene',sw(b+'shoeColor',CL()));
 }
-function kidLook(){const q=state.people[state.cur],k=q.kid,L=k.look||{},g=k.girl,o=merge(LOOK,{skin:L.skin||q.skin,eyes:L.eyes||q.eyes,hair:L.hair||(g?'hestehale':'kort'),hairColor:L.hairColor||q.hairColor,top:L.top||'tskjorte',topColor:L.topColor||(g?'#c97b84':'#7fa3c7'),bottom:L.bottom||(g?'skjort':'shorts'),bottomColor:L.bottomColor||(g?'#9b3b47':'#34507a'),dress:L.dress||'none',dressColor:L.dressColor||'#7fa3c7',shoes:L.shoes||'sneakers',shoeColor:L.shoeColor||'#f5f3ee'});
-  o.feat={face:'rund',er:0,es:1.12,lip:1,bx:1.08,h:k.age>1?.7:.52};return o}
+function kidLook(){const q=state.people[state.cur],k=q.kid,L=k.look||{},g=k.girl,hi=Math.max(0,HAIR.indexOf(q.hairColor)),o=merge(LOOK,{skin:L.skin||q.skin,eyes:L.eyes||EYES[(Math.max(0,EYES.indexOf(q.eyes))+1)%EYES.length],freckles:!!L.freckles,hair:L.hair||(g?'hestehale':'kort'),hairColor:L.hairColor||HAIR[(hi+2)%6],top:L.top||'tskjorte',topColor:L.topColor||(g?'#c97b84':'#7fa3c7'),bottom:L.bottom||(g?'skjort':'shorts'),bottomColor:L.bottomColor||(g?'#9b3b47':'#34507a'),dress:L.dress||'none',dressColor:L.dressColor||'#7fa3c7',shoes:L.shoes||'sneakers',shoeColor:L.shoeColor||'#f5f3ee'});
+  o.feat={face:'rund',er:0,es:1.18,lip:.9,bx:.94,h:k.age>1?.7:.52};o.child=true;return o}
 function buildKid(){clr(G3.kid);G3.krig=null;G3.kid.visible=false;if(P().kid.age<1)return;dl=kidLook();G3.krig=buildMe(G3.kid);dl=null;G3.kid.visible=true}
 function kidStep(dt,now){
   const R=G3.krig;if(!R||!G3.kid.visible)return;const h=Lf()[HK()];if(!G3.kp)G3.kp={x:Math.max(.5,h.x-.5),y:h.y>1.5?3:0,z:Math.max(1.8,h.z),a:0,ph:0};
@@ -1177,7 +1183,7 @@ function endAct(quiet){
 function actPose(dt,now){
   const R=G3.rig,me=G3.me,a=G3.act,f=Ft().h,br=Math.sin(now/800)*.008;if(!R)return;
   const all=(hp,kn,ft,ar,el)=>[0,1].forEach(i=>{R.hip[i].rotation.x=hp;R.knee[i].rotation.x=kn;R.foot[i].rotation.x=ft;R.arm[i].rotation.x=ar;R.arm[i].rotation.z=(i?1:-1)*.07;R.elbow[i].rotation.x=el});
-  R.bd.rotation.z=0;R.tr.position.y=1;
+  R.bd.rotation.z=0;R.tr.position.y=(R.ty||1);
   if(a==='lie'){if(!G3.mx)G3.mx=new THREE.Matrix4().makeBasis(new THREE.Vector3(0,0,-1),new THREE.Vector3(-1,0,0),new THREE.Vector3(0,1,0));
     me.position.set(7.2+1.68*f,3.66,.88);me.quaternion.setFromRotationMatrix(G3.mx);all(-.02,.05,.5,0,-.08);R.tr.rotation.set(0,0,0);R.bd.position.set(0,0,br)}
   else if(a==='sit'){const S=G3.seat||{x:7.1,y:.57,z:.84,r:0};me.position.set(S.x,S.y-.88*f,S.z);me.rotation.set(0,S.r,0);all(-1.5,1.5,0,-.42,-.75);R.tr.rotation.set(-.1,0,0);R.bd.position.set(0,br,0)}
@@ -1467,7 +1473,7 @@ function act(a){
   if(k==='kidnew'){G3.kform={name:'',girl:true,c:0};render();$('panel').scrollTop=0;return}
   if(k==='kidg'){G3.kform.girl=v==='1';return render()}
   if(k==='kidno'){G3.kform=null;return render()}
-  if(k==='kidok'){const f=G3.kform;G3.kform=null;const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
+  if(k==='kidok'){const f=G3.kform;G3.kform=null;const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
   if(k==='kid'){const kd=p.kid,T={bottle:' drikker flaska si.',cuddle:' koser seg i armene dine.',song:' sovner til sangen din.',play:' ler og hopper.',read:' hører på eventyret.',food:' spiser opp maten sin.'}[v],done=()=>{
       kd.xp++;kd.glad=Math.min(100,kd.glad+20);need('humor',8);msg=kd.name+T;
       if(kd.age===0&&kd.xp>=4){kd.age=1;msg=kd.name+' har vokst og kan gå selv!';toast(msg)}else if(kd.age===1&&kd.xp>=10){kd.age=2;msg=kd.name+' er blitt et stort barn.';toast(msg)}
