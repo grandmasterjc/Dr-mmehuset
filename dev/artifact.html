@@ -189,7 +189,7 @@ function au(){
     AU.master=c.createGain();const cp=c.createDynamicsCompressor();cp.threshold.value=-10;cp.ratio.value=4;AU.master.connect(cp);cp.connect(c.destination);AU.sfx=c.createGain();AU.sfx.gain.value=1.9;AU.sfx.connect(AU.master);AU.mus=c.createGain();AU.mus.gain.value=0;AU.mus.connect(AU.master);
     const b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AU.noise=b;sndLevel()}catch(e){return null}}
   if(AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});return AU.ctx}
-function sndLevel(){if(!AU.ctx)return;const v=state?state.snd:2,t=AU.ctx.currentTime;AU.master.gain.setTargetAtTime(v>0?1.2:0,t,.05);AU.mus.gain.setTargetAtTime(v>1?1.1:0,t,.4);if(v<1)Object.keys(AU.loops).forEach(k=>loop(k,false))}
+function sndLevel(){if(!AU.ctx)return;const v=state?state.snd:2,t=AU.ctx.currentTime;AU.master.gain.setTargetAtTime(v>0?1.2:0,t,.05);AU.mus.gain.setTargetAtTime(v>1?1.8:0,t,.4);if(v<1)Object.keys(AU.loops).forEach(k=>loop(k,false))}
 function tone(f,d,type,vol,at,f2){const c=au();if(!c||!state.snd)return;const t=c.currentTime+(at||0),o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.1,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AU.sfx);o.start(t);o.stop(t+d+.05)}
 function noise(d,vol,freq,type,at){const c=au();if(!c||!state.snd)return;const t=c.currentTime+(at||0),s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type=type||'lowpass';f.frequency.value=freq||800;
@@ -210,6 +210,7 @@ function sfx(n){if(!state||!state.snd)return;
   else if(n==='door'){tone(110,.15,'sine',.12,0,80);noise(.08,.06,600)}
   else if(n==='giggle')[0,.1,.2,.3].forEach((a,i)=>tone(900+i*60,.08,'sine',.06,a,1100));
   else if(n==='ding'){tone(1047,.6,'sine',.08);tone(1568,.6,'sine',.04,.02)}
+  else if(n==='buckle'){noise(.03,.25,4000,'highpass');tone(1900,.04,'square',.05,.07);noise(.03,.2,3000,'highpass',.08)}
   else if(n==='pop')tone(300,.08,'sine',.08,0,700);
 }
 function loop(n,on){const c=on?au():AU.ctx;if(!c)return;const cur=AU.loops[n];
@@ -1395,7 +1396,9 @@ function sync3(){
   if(!G3.run){G3.run=true;G3.snap=true;G3.t=performance.now();requestAnimationFrame(loop3)}
 }
 const STOPS=[['home',300,'Hjem'],['friends',1100,'Vennene'],['petshop',1900,'Dyrebutikken'],['airport',2800,'Flyplassen']];
-const DR={run:false,v:0,t:0,near:'',ang:0,dirn:1,view:'out'};
+const DR={run:false,v:0,t:0,near:'',ang:0,dirn:1,view:'out',belt:{me:false,kid:false},wt:0};
+const belted=()=>DR.belt.me&&(P().kid.age<0||DR.belt.kid);
+const strap=(x1,y1,x2,y2,w)=>`<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="#1d1f24" stroke-width="${(w+2).toFixed(1)}" stroke-linecap="round"/><path d="M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="#5a5f6b" stroke-width="${w.toFixed(1)}" stroke-linecap="round"/><rect x="${(x2-w*.9).toFixed(1)}" y="${(y2-w*.6).toFixed(1)}" width="${(w*1.8).toFixed(1)}" height="${(w*1.2).toFixed(1)}" rx="2" fill="#c9ced3"/>`;
 function riders(){const p=P(),kd=p.kid,pt=p.pet;let o='<clipPath id="rwin"><path d="M66 342L76 328L100 328L100 342Z"/></clipPath><g clip-path="url(#rwin)">';
   if(kd.age>=0){const L=kidLook();o+=`<circle cx="91" cy="${kd.age?337:340}" r="${kd.age?5.2:4.2}" fill="${L.skin}"/><path d="M85.5 ${kd.age?337:340}Q85 ${kd.age?330:335} 91 ${kd.age?330:335}Q97 ${kd.age?330:335} 96.5 ${kd.age?336:339}Q92 ${kd.age?333:337} 88 ${kd.age?334:338}Z" fill="${L.hairColor}"/>`}
   if(pt.type!=='none')o+=petSVG(pt.type,pt.color,kd.age>=0?76:84,347,.17);
@@ -1409,13 +1412,14 @@ function carInSVG(){
     +'<path d="M110 40Q320 18 530 40L556 176L84 176Z" fill="none" stroke="#1d1f24" stroke-width="10"/><rect x="40" y="-60" width="560" height="70" rx="20" fill="#3a3e47"/><rect x="270" y="-6" width="100" height="26" rx="8" fill="#17181c"/><rect x="276" y="-1" width="88" height="16" rx="5" fill="#8fa7b8"/>'
     +'<rect x="40" y="168" width="560" height="140" rx="26" fill="#4a4f5a"/><rect x="40" y="168" width="560" height="22" rx="11" fill="#555b67"/>'+[150,320,490].map(x=>`<rect x="${x-38}" y="140" width="76" height="40" rx="12" fill="#555b67"/>`).join('');
   // back row
-  if(kd.age>=1){dl=kidLook();const g=girl(),k=.5*dl.feat.h/.7;dl=null;o+=`<svg x="0" y="0" width="640" height="300" viewBox="0 0 640 300"><g transform="translate(${(228-150*k).toFixed(1)} ${(262-375*k).toFixed(1)}) scale(${k.toFixed(3)})">${g}</g></svg><path d="M200 222L256 222L260 290L196 290Z" fill="#2b2d33" opacity=".55"/>`}
-  else if(kd.age===0){const L=kidLook();o+='<rect x="170" y="176" width="116" height="112" rx="22" fill="#34507a"/><rect x="182" y="190" width="92" height="90" rx="16" fill="#40609a"/>'+babySVG(kd.look||{},L.skin,L.hairColor,243,262,.75)}
+  if(kd.age>=1){dl=kidLook();const g=girl(),k=.5*dl.feat.h/.7;dl=null;o+=`<svg x="0" y="0" width="640" height="300" viewBox="0 0 640 300"><g transform="translate(${(228-150*k).toFixed(1)} ${(262-375*k).toFixed(1)}) scale(${k.toFixed(3)})">${g}</g></svg><path d="M200 222L256 222L260 290L196 290Z" fill="#2b2d33" opacity=".55"/>`+(DR.belt.kid?strap(228+(186-150)*k*1.0,262+(222-375)*k,228+(116-150)*k,262+(372-375)*k,9*k):strap(268,214,272,290,5))}
+  else if(kd.age===0){const L=kidLook();o+='<rect x="170" y="176" width="116" height="112" rx="22" fill="#34507a"/><rect x="182" y="190" width="92" height="90" rx="16" fill="#40609a"/>'+babySVG(kd.look||{},L.skin,L.hairColor,243,262,.75)+(DR.belt.kid?strap(222,232,243,268,5)+strap(266,232,245,268,5):'')}
   if(pt.type!=='none')o+=petSVG(pt.type,pt.color,350,272,.9);
   // front seats + driver
   o+='<rect x="60" y="250" width="230" height="170" rx="30" fill="#3b3f48"/><rect x="350" y="250" width="230" height="170" rx="30" fill="#3b3f48"/><rect x="128" y="214" width="94" height="58" rx="18" fill="#454a55"/><rect x="418" y="214" width="94" height="58" rx="18" fill="#454a55"/>';
   const f=Ft().h,k2=.62*f;o+=`<svg x="0" y="0" width="640" height="356" viewBox="0 0 640 356"><g transform="translate(${(465-150*k2).toFixed(1)} ${(338-290*k2).toFixed(1)}) scale(${k2.toFixed(3)})">${girl()}</g></svg>`;
   o+='<rect x="-640" y="356" width="1920" height="100" fill="#22252b"/><rect x="-640" y="352" width="1920" height="8" fill="#383c45"/>';
+  o+=DR.belt.me?strap(465+(188-150)*k2,338+(134-290)*k2,465+(112-150)*k2,338+(284-290)*k2,9*k2):strap(548,236,552,330,6);
   o+='<g id="wheel"><ellipse cx="465" cy="330" rx="72" ry="30" fill="none" stroke="#17181c" stroke-width="11"/><path d="M397 334L533 334M465 330L465 360" stroke="#17181c" stroke-width="8"/><circle cx="465" cy="334" r="13" fill="#2b2d33"/></g>';
   o+='<rect x="500" y="364" width="120" height="44" rx="8" fill="#111317"/><text x="560" y="392" text-anchor="middle" font-family="Jost,sans-serif" font-size="15" fill="#7fe0c0" id="spd">0 km/t</text>';
   return [o+(eve?'<rect x="-640" y="-600" width="1920" height="1400" fill="#0c1233" opacity=".3"/>':'')+'</svg>','#2f323a'];
@@ -1438,7 +1442,7 @@ function driveSVG(){if(DR.view==='in')return carInSVG();
     +(eve?'<rect x="-640" y="-600" width="1920" height="1400" fill="#0c1233" opacity=".4"/>':'')+'</svg>',sky[0]];
 }
 function driveStep(now){
-  if(!DR.run)return;const dt=Math.min(.05,(now-DR.t)/1000);DR.t=now;const l=Lf(),K=G3.keys,ix=G3.dir.x+(K.r?1:0)-(K.l?1:0);
+  if(!DR.run)return;const dt=Math.min(.05,(now-DR.t)/1000);DR.t=now;const l=Lf(),K=G3.keys;let ix=G3.dir.x+(K.r?1:0)-(K.l?1:0);if(ix&&!belted()){ix=0;if(now-DR.wt>2600){DR.wt=now;toast('Spenn fast setebeltet først!');sfx('bad')}}
   DR.v+=(ix*440-DR.v)*Math.min(1,dt*(ix?1.8:3));const ox=l.cx;l.cx=Math.max(150,Math.min(3050,l.cx+DR.v*dt));if(l.cx===ox)DR.v=0;
   if(Math.abs(DR.v)>4)DR.dirn=DR.v>0?1:-1;DR.ang+=(l.cx-ox)*DR.dirn/16*57.3;
   const ins=document.getElementById('ins');if(ins){ins.setAttribute('transform',`translate(${(-(l.cx*.8)%640).toFixed(1)} 0)`);const sp=document.getElementById('spd');if(sp)sp.textContent=Math.round(Math.abs(DR.v)/5)+' km/t';const wh=document.getElementById('wheel');if(wh)wh.setAttribute('transform',`rotate(${(ix*-6).toFixed(0)} 465 334)`)}
@@ -1576,7 +1580,8 @@ function act(a){
   if(k==='wcancel'){writing=null;return render()}
   if(k==='wsend'){if(!writing.to){msg='Velg hvem brevet er til.';return render()}if(!writing.text.trim()){msg='Skriv noe i brevet først.';return render()}
     const to=writing.to;writing=null;render();return doAt(doorX()-80,()=>{l.pending=to;need('humor',8);msg='Brevet til '+to+' ligger i postkassa og er på vei. Kanskje du får svar.';fire('sendmail');render()})}
-  if(k==='drive'){l.place='bil';l.cx=300;return render()}
+  if(k==='drive'){l.place='bil';l.cx=300;DR.belt={me:false,kid:false};DR.view='in';return render()}
+  if(k==='belt'){DR.belt[v]=true;sfx('buckle');msg=belted()?'Alle har setebeltet på. God tur!':v==='me'?'Setebeltet ditt er på.':p.kid.name+' har setebeltet på.';return render()}
   if(k==='carcol'){l.car=v;return render()}
   if(k==='carview'){DR.view=DR.view==='in'?'out':'in';return render()}
   if(k==='mail')return doAt(doorX()-80,()=>{const g=Gm();if(g.mail>0){g.mail--;sfx('rustle');l.letter=genMail();fire('mail')}render();$('panel').scrollTop=0});
@@ -1663,7 +1668,7 @@ function lifeBody(){
   if(l.place==='bil'){const nr=STOPS.find(q=>Math.abs(q[1]-l.cx)<120);
     return head('På veien',nr?nr[2]:'Kjør bil','Hold inne pilene i bildet, eller bruk piltastene.')
       +(!nr?'':nr[0]==='friends'?row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join('')):`<div class="acts">${ab(nr[0],nr[0]==='home'?'Parker hjemme':'Parker og gå inn')}</div>`)
-      +`<div class="acts">${ab('carview',DR.view==='in'?'Se bilen utenfra':'Se inn i bilen',1)}</div>`+(()=>{const q=P(),w=[];if(q.kid.age>=0)w.push(esc(q.kid.name));if(q.pet.type!=='none')w.push(esc(q.pet.name));return w.length?`<p class="hint">Med i bilen: ${w.join(' og ')}.</p>`:''})()
+      +row('Setebelte',(DR.belt.me?'<span class="chip on">Du har belte på</span>':ab('belt:me','Spenn fast deg selv'))+(P().kid.age<0?'':DR.belt.kid?`<span class="chip on">${esc(P().kid.name)} har belte på</span>`:ab('belt:kid','Spenn fast '+esc(P().kid.name))))+(belted()?'':'<p class="hint">Alle må ha setebeltet på før bilen kan kjøre.</p>')+`<div class="acts">${ab('carview',DR.view==='in'?'Se bilen utenfra':'Se inn i bilen',1)}</div>`+(()=>{const q=P(),w=[];if(q.kid.age>=0)w.push(esc(q.kid.name));if(q.pet.type!=='none')w.push(esc(q.pet.name));return w.length?`<p class="hint">Med i bilen: ${w.join(' og ')}.</p>`:''})()
       +row('Bilfarge',CARC.map((c,i)=>`<button type="button" class="sw${l.car===c?' on':''}" style="background:${c}" data-act="carcol:${c}" aria-label="Farge ${i+1}"></button>`).join(''))+m}
   if(l.place==='dyr'){const sh=l.shop,pt=P().pet;
     return head('Dyrebutikken',pt.type==='none'?'Velg et kjæledyr':'Bytt kjæledyr',pt.type==='none'?'Dyret følger deg rundt i huset.':'Du har '+esc(pt.name)+' fra før. Et nytt dyr tar plassen.')
