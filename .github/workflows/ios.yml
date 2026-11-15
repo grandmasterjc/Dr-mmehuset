@@ -21,17 +21,20 @@ jobs:
         if: failure()
         run: grep -E "error:" -A3 build.log | head -150 || true
       - name: Skjermbilder i simulator
+        timeout-minutes: 20
+        continue-on-error: true
         run: |
           pick() { xcrun simctl list devices available -j | python3 -c "import json,sys;d=json.load(sys.stdin)['devices'];print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('$1')))"; }
+          to() { perl -e 'alarm shift; exec @ARGV' "$@"; }
           mkdir -p shots
           shoot() { # enhet navn argumenter...
             dev=$1; name=$2; shift 2
             xcrun simctl terminate "$dev" com.grandmasterjc.drommehuset 2>/dev/null || true
-            xcrun simctl launch "$dev" com.grandmasterjc.drommehuset "$@"
+            to 90 xcrun simctl launch "$dev" com.grandmasterjc.drommehuset "$@"
             sleep ${WAIT:-5}
-            xcrun simctl io "$dev" screenshot "shots/$name.png"
+            to 60 xcrun simctl io "$dev" screenshot "shots/$name.png"
           }
-          P=$(pick "iPhone 16"); xcrun simctl boot "$P"; xcrun simctl bootstatus "$P" -b
+          P=$(pick "iPhone 16"); xcrun simctl boot "$P"; to 400 xcrun simctl bootstatus "$P" -b || true
           xcrun simctl install "$P" build/Debug-iphonesimulator/Drommehuset.app
           shoot "$P" iphone-sminke -tab sminke
           shoot "$P" iphone-hus-ute -tab hus -husvis ute
@@ -43,11 +46,12 @@ jobs:
           shoot "$P" iphone-liv-ute -tab liv -sted ute
           shoot "$P" iphone-liv-bil -tab liv -sted bil
           shoot "$P" iphone-liv-flyplass -tab liv -sted flyplass
-          I=$(pick "iPad"); xcrun simctl boot "$I"; xcrun simctl bootstatus "$I" -b
+          I=$(pick "iPad"); xcrun simctl boot "$I"; to 400 xcrun simctl bootstatus "$I" -b || true
           xcrun simctl install "$I" build/Debug-iphonesimulator/Drommehuset.app
           shoot "$I" ipad-hus -tab hus -husvis ute
           WAIT=9 shoot "$I" ipad-liv -tab liv
-      - uses: actions/upload-artifact@v4
+      - if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: skjermbilder
           path: shots/
