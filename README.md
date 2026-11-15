@@ -16,3 +16,13 @@ Da ligger spillet på hjemskjermen som en app, åpnes i fullskjerm og virker ogs
 - `three.min.js` – 3D-biblioteket (three.js r128, MIT-lisens).
 - `manifest.webmanifest`, `sw.js`, `icon-*.png` – gjør at spillet kan legges på hjemskjermen og virke uten nett.
 - `dev/artifact.html` – samme spill, i versjonen som publiseres på claude.ai.
+
+## iOS-appen (Swift)
+
+Mappen `ios/` inneholder en egen iOS-app skrevet i Swift og SwiftUI.
+
+1. Åpne `ios/Drommehuset.xcodeproj` i Xcode 16 eller nyere.
+2. Velg ditt eget team under *Signing & Capabilities*.
+3. Trykk Kjør.
+
+Første versjon har Sminke, Hår, Klær, Pakke, åtte personer, mynter og lagring. Hus, Barn og Liv kommer i senere versjoner.
