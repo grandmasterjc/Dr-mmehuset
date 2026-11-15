@@ -282,7 +282,7 @@ const DEF={v:3,tab:'sminke',cur:0,
     garden:{tre:true,hekk:true,bed:true,lys:false,terrasse:false,bil:false,basseng:false}},
   unlocked:{solbriller:false,veske:false,skinnjakke:false,gallakjole:false,smykker:false,basseng:false,rosa:false,blaa:false,lue:false,gull:false},
   game:{coins:80,free:0,mail:1,xp:0,tasks:{a:'cookperfect',b:'friend',c:'stairs'},needs:{sult:70,energi:80,hygiene:75,humor:70}},
-  life:{wash:false,crew:{f0:false,f1:false,f2:false,f3:false,f4:false,f5:false,f6:false,f7:false,mamma:false,pappa:false,bestemor:false,bestefar:false},letter:null,pending:'',lastKind:'',bags:{o:'',m:'',c:'',pc:'',bm:'',mt:'',mp:'',mr:'',ad:'',bl:'',r1:'',r2:'',r3:''},cx:300,car:'#39475a',shop:{type:'katt',color:'#e08a3c',name:''},place:'hjem',room:'stue',x:320,friend:1,dest:'oslo',line:0,tv:false,food:null,
+  life:{wash:false,crew:{f0:false,f1:false,f2:false,f3:false,f4:false,f5:false,f6:false,f7:false,mamma:false,pappa:false,bestemor:false,bestefar:false,kid:true,pet:true},letter:null,pending:'',lastKind:'',bags:{o:'',m:'',c:'',pc:'',bm:'',mt:'',mp:'',mr:'',ad:'',bl:'',r1:'',r2:'',r3:''},cx:300,car:'#39475a',shop:{type:'katt',color:'#e08a3c',name:''},place:'hjem',room:'stue',x:320,friend:1,dest:'oslo',line:0,tv:false,food:null,
     h3:{x:8,z:3.1,y:0},f3:{x:.9,z:3.1,y:0},stamps:{oslo:false,bergen:false,tromso:false,lofoten:false,preikestolen:false,paris:false,london:false,roma:false,newyork:false,tokyo:false,egypt:false}},
   rain:false,opened:0,tubv:0,snd:2};
 
@@ -897,10 +897,10 @@ function lifeScene(){
   if(l.place==='venn'){const hf=figOf(hostE(l.friend)),fg=hf[0],k=.36*hf[1];
     const t=l.said||LINES[l.line%LINES.length],w=t.length*6.4+26,bx=Math.max(8,Math.min(632-w,200-w/2)),mt=l.me||'',mw=mt.length*6.4+26,mx=Math.max(8,Math.min(632-mw,l.x-mw/2)),myB=mt?`<rect x="${mx}" y="58" width="${mw}" height="30" rx="10" fill="#1d1b22"/><text x="${mx+13}" y="78" font-family="Jost,sans-serif" font-size="13" fill="#fff">${esc(mt)}</text>`:'';
     return roomParts('stue',FR[l.friend],`<g transform="${wt(200,k,366,0)}">${fg}</g><rect x="${bx}" y="${96}" width="${w}" height="30" rx="10" fill="#fff" stroke="#0003"/><path d="M196 125l4 12l10-12z" fill="#fff"/><text x="${bx+13}" y="116" font-family="Jost,sans-serif" font-size="13" fill="#1d1b22">${esc(t)}</text>`+myB+walkerG(l.x,.36,372))}
-  if(l.place==='flyplass')return airportSVG(crowd(4,372,.3,3,-120,760)+crewFigs([300,350,60,110],.34,378)+walkerG(l.x,.34,378));
+  if(l.place==='flyplass')return airportSVG(crowd(4,372,.3,3,-120,760)+crewFigs([300,350,60,110,400,455],.34,378)+walkerG(l.x,.34,378));
   if(l.place==='dyr')return petShopSVG(walkerG(l.x,.34,378));
   if(l.place==='bil')return driveSVG();
-  if(l.place==='reise')return destSVG(l.dest,crowd(l.dest==='preikestolen'?2:4,370,.3,7+l.dest.length,-140,l.dest==='preikestolen'?400:780)+crewFigs(l.dest==='preikestolen'?[60,115,230,285]:[430,485,540,595],.34,376)+walkerG(l.x,.34,376));
+  if(l.place==='reise')return destSVG(l.dest,crowd(l.dest==='preikestolen'?2:4,370,.3,7+l.dest.length,-140,l.dest==='preikestolen'?400:780)+crewFigs(l.dest==='preikestolen'?[60,115,230,285,290,345]:[430,485,540,595,370,320],.34,376)+walkerG(l.x,.34,376));
   return roomParts(l.room,state.house.inne[l.room],walkerG(l.x,.36,372),true);
 }
 
@@ -1532,8 +1532,14 @@ const NBDEF=[{name:'Ingrid',skin:SKIN[0],eyes:EYES[2],hair:'pannelugg',hairColor
   {name:'Sara',skin:SKIN[2],eyes:EYES[2],hair:'kroller',hairColor:HAIR[1],lips:LIPS[0],top:'tskjorte',topColor:CLOTH[9],bottom:'skjort',bottomColor:CLOTH[8],shoes:'sneakers',shoeColor:CLOTH[0],feat:{face:'oval',er:-3,es:1.04,lip:1.2,bx:.98,h:.96}}];
 const NB=NBDEF.map(d=>{const q=merge(LOOK,d);q.feat=d.feat;return q});
 const hostLook=i=>i<NP?state.people[i]:NB[i-NP],hostE=i=>i<NP?{i:i}:{look:NB[i-NP]};
-function crewList(){const c=Lf().crew,o=[];state.people.forEach((q,i)=>{if(i!==state.cur&&c['f'+i])o.push({name:q.name||'Venn',i:i})});Object.keys(FAM).forEach(k=>{if(c[k])o.push({name:FAM[k].name,look:FAM[k]})});return o.slice(0,4)}
-function figOf(e){if(e){if(e.look)dl=e.look;else di=e.i}const g=girl(),h=Ft().h;dl=null;di=null;return [g,h]}
+function crewList(){const c=Lf().crew,o=[];state.people.forEach((q,i)=>{if(i!==state.cur&&c['f'+i])o.push({name:q.name||'Venn',i:i})});Object.keys(FAM).forEach(k=>{if(c[k])o.push({name:FAM[k].name,look:FAM[k]})});const r=o.slice(0,4),q=P();
+  if(c.kid&&q.kid.age>=0)r.push({name:q.kid.name||'Barnet',look:kidLook(),kid:q.kid.age});if(c.pet&&q.pet.type!=='none')r.push({name:q.pet.name||'Dyret',pet:q.pet});return r}
+function figOf(e,seat){
+  if(e&&e.pet){const pt=e.pet;return [seat?petSVG(pt.type,pt.color,150,240,1.85):petSVG(pt.type,pt.color,150,520,2.3),1]}
+  if(e&&e.kid===0){const L=e.look;if(seat)return [babySVG(state.people[state.cur].kid.look||{},L.skin,L.hairColor,170,250,2.1),1];
+    return ['<g><rect x="70" y="420" width="170" height="110" rx="40" fill="#34507a"/><path d="M80 470Q90 380 190 395L196 470Z" fill="#2c4467"/><path d="M240 430L268 380" stroke="#33363b" stroke-width="10" stroke-linecap="round"/><circle cx="105" cy="560" r="34" fill="#1d1f23"/><circle cx="215" cy="560" r="34" fill="#1d1f23"/><circle cx="105" cy="560" r="12" fill="#9ba1a8"/><circle cx="215" cy="560" r="12" fill="#9ba1a8"/>'
+      +`<circle cx="205" cy="440" r="26" fill="${L.skin}"/><path d="M182 432Q186 410 206 412Q226 414 229 432Q214 424 196 428Z" fill="${L.hairColor}"/><circle cx="198" cy="442" r="2.6" fill="#1d1020"/><circle cx="213" cy="442" r="2.6" fill="#1d1020"/></g>`,1]}
+  if(e){if(e.look)dl=e.look;else di=e.i}const g=girl(),h=e&&e.kid?1:Ft().h;dl=null;di=null;return [g,h]}
 function crewFigs(xs,sc,fy){return crewList().map((e,j)=>{const f=figOf(e);return `<g transform="${wt(xs[j],sc*f[1],fy,0)}">${f[0]}</g>`}).join('')}
 function cabinSVG(){
   const crew=crewList(),all=crew.slice(0,Math.ceil(crew.length/2)).concat([null],crew.slice(Math.ceil(crew.length/2))),m=all.length,eve=state.house.time==='kveld';
@@ -1545,7 +1551,7 @@ function cabinSVG(){
   o+='<rect x="-640" y="262" width="1920" height="200" fill="#0002"/>';
   const xs=all.map((q,i)=>320+(i-(m-1)/2)*104);
   xs.forEach(x=>o+=`<rect x="${x-44}" y="176" width="88" height="170" rx="15" fill="#34507a"/><rect x="${x-27}" y="166" width="54" height="40" rx="11" fill="#40609a"/><rect x="${x-22}" y="170" width="44" height="14" rx="5" fill="#f6f7f8" opacity=".85"/>`);
-  o+='<svg x="0" y="0" width="640" height="326" viewBox="0 0 640 326">'+all.map((e,i)=>{const f=figOf(e),k=.6*f[1];return `<g transform="translate(${(xs[i]-150*k).toFixed(1)} ${(232-70*k).toFixed(1)}) scale(${k})">${f[0]}</g>`}).join('')+'</svg>';
+  o+='<svg x="0" y="0" width="640" height="326" viewBox="0 0 640 326">'+all.map((e,i)=>{const f=figOf(e,1),k=.6*f[1];return `<g transform="translate(${(xs[i]-150*k).toFixed(1)} ${(232-70*k).toFixed(1)}) scale(${k})">${f[0]}</g>`}).join('')+'</svg>';
   xs.forEach((x,i)=>{o+=`<rect x="${x-46}" y="318" width="92" height="50" rx="8" fill="#2c4467"/><path d="M${x-40} 322Q${x} 334 ${x+40} 322" stroke="#8c8f96" stroke-width="5" fill="none"/><rect x="${x-7}" y="324" width="14" height="9" rx="2" fill="#c9ced3"/>`
       +`<text x="${x}" y="358" text-anchor="middle" font-family="Jost,sans-serif" font-size="12" fill="#f6f7f8">${esc(all[i]?all[i].name:(P().name||'Du'))}</text>`});
   for(let i=0;i<=m;i++){const x=320+(i-m/2)*104;o+=`<rect x="${x-6}" y="290" width="12" height="78" rx="4" fill="#55595f"/>`}
@@ -1646,8 +1652,8 @@ function act(a){
   if(k==='land')return land();
   if(k==='window'){flyView=flyView==='out'?'cabin':'out';return render()}
   if(k==='snack'){if(!snack){snack=true;need('sult',15);msg='Du fikk en bolle og et glass saft.'}return render()}
-  if(k==='crew'){l.crew[v]=!l.crew[v];if(crewList().length<Object.keys(l.crew).filter(q=>l.crew[q]&&q!=='f'+state.cur).length){l.crew[v]=false;msg='Du kan ha med deg fire stykker.'}return render()}
-  if(k==='fly'){const c=(v==='home'?0:DEST[v][3]?20:45)*(1+crewList().length);if(Gm().coins<c){msg='Du har ikke nok mynter til billetten. Fullfør oppdrag for å tjene flere.';return render()}Gm().coins-=c;return fly(v)}
+  if(k==='crew'){l.crew[v]=!l.crew[v];if(crewList().filter(q=>!q.pet&&q.kid==null).length<Object.keys(l.crew).filter(q=>l.crew[q]&&q!=='f'+state.cur&&q!=='kid'&&q!=='pet').length){l.crew[v]=false;msg='Du kan ha med deg fire stykker.'}return render()}
+  if(k==='fly'){const pr=v==='home'?0:DEST[v][3]?20:45,cl=crewList(),c=pr*(1+cl.filter(q=>!q.pet&&q.kid==null).length)+Math.round(pr/2)*cl.filter(q=>q.kid!=null).length+(pr?10:0)*cl.filter(q=>q.pet).length;if(Gm().coins<c){msg='Du har ikke nok mynter til billetten. Fullfør oppdrag for å tjene flere.';return render()}Gm().coins-=c;return fly(v)}
   if(k==='petshop'){l.place='dyr';l.x=150;return render()}
   if(k==='ptype'){l.shop.type=v;return render()}
   if(k==='pcol'){l.shop.color=v;return render()}
@@ -1697,7 +1703,7 @@ function lifeBody(){
       +(v3?row('Gå til',ab('goto:gang','Gang',1)+ab('goto:stue','Stue',1)+ab('goto:kjokken','Kjøkken',1)+ab('goto:oppe',rr[2]?'Gang oppe':'Opp trappa',1)+ab('goto:soverom','Soverom',1)+ab('goto:bad','Bad',1))+row('Gjør noe',(rr[0]==='stue'?ab('sit','Sett deg i sofaen',1):'')+(rr[0]==='kjokken'?ab('cooktog','Lag mat sammen',1):'')+(l.food&&rr[0]==='kjokken'?ab('eattog','Spis sammen ved bordet',1):'')+(rr[0]==='bad'?badActs(friendHouse(l.friend).inne.bad.items):'')+(rr[0]!=='stue'&&rr[0]!=='kjokken'&&rr[0]!=='bad'?'<span class="hint">Gå til stua eller kjøkkenet for å finne på noe sammen.</span>':'')):'')+`<div class="row"><h2><label for="say">Si noe selv</label></h2><div class="acts"><input class="txt" id="say" maxlength="60" autocomplete="off" placeholder="Skriv hva du vil si">${ab('say','Si det')}</div></div>`+row('Forslag',SAYQ.map((t,i)=>ab('sayq:'+i,t,1)).join(''))+`<div class="acts">${ab('talk','La vennen prate',1)}${l.food?ab('give','Gi bort '+esc(l.food.name.toLowerCase()),1):''}${ab('home','Dra hjem',1)}</div>`+m}
   const n=Object.values(l.stamps).filter(Boolean).length,pass=`<p class="hint">Stempler i passet: ${n} av 11.</p>`;
   if(l.place==='flyplass'){const ks=Object.keys(DEST);
-    return head('Flyplassen','Hvor vil du fly?','Billetter i Norge koster 20 mynter per person. Utlandet koster 45 per person.')+row('Hvem blir med?',state.people.map((q,i)=>i===state.cur?'':`<button type="button" class="chip${l.crew['f'+i]?' on':''}" data-act="crew:f${i}" aria-pressed="${!!l.crew['f'+i]}">${esc(q.name)||'Venn'}</button>`).join('')+Object.keys(FAM).map(q=>`<button type="button" class="chip${l.crew[q]?' on':''}" data-act="crew:${q}" aria-pressed="${!!l.crew[q]}">${FAM[q].name}</button>`).join(''))+row('Norge',ks.filter(k=>DEST[k][3]).map(k=>ab('fly:'+k,DEST[k][0]+' · '+(DEST[k][3]?20:45),1)).join(''))
+    return head('Flyplassen','Hvor vil du fly?','Billetter i Norge koster 20 mynter per person. Utlandet koster 45 per person.')+row('Hvem blir med?',state.people.map((q,i)=>i===state.cur?'':`<button type="button" class="chip${l.crew['f'+i]?' on':''}" data-act="crew:f${i}" aria-pressed="${!!l.crew['f'+i]}">${esc(q.name)||'Venn'}</button>`).join('')+Object.keys(FAM).map(q=>`<button type="button" class="chip${l.crew[q]?' on':''}" data-act="crew:${q}" aria-pressed="${!!l.crew[q]}">${FAM[q].name}</button>`).join('')+(P().kid.age>=0?`<button type="button" class="chip${l.crew.kid?' on':''}" data-act="crew:kid" aria-pressed="${!!l.crew.kid}">${esc(P().kid.name)} (halv pris)</button>`:'')+(P().pet.type!=='none'?`<button type="button" class="chip${l.crew.pet?' on':''}" data-act="crew:pet" aria-pressed="${!!l.crew.pet}">${esc(P().pet.name)} (10 mynter)</button>`:''))+row('Norge',ks.filter(k=>DEST[k][3]).map(k=>ab('fly:'+k,DEST[k][0]+' · '+(DEST[k][3]?20:45),1)).join(''))
       +row('Utlandet',ks.filter(k=>!DEST[k][3]).map(k=>ab('fly:'+k,DEST[k][0]+' · '+(DEST[k][3]?20:45),1)).join(''))+`<div class="acts">${ab('home','Dra hjem')}</div>`+pass}
   if(l.place==='reise'){const d=DEST[l.dest];return head(d[1],d[0],d[2])+`<div class="acts">${ab('airport','Fly videre')}${ab('fly:home','Fly hjem',1)}</div>`+pass}
   if(G3.kform&&l.place==='hjem')return head('Familie','Få et barn','Babyen bor i sprinkelsenga på soverommet. Når du steller den, vokser den og begynner å gå.')
