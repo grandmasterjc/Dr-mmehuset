@@ -186,10 +186,10 @@ const SNDICON=['<svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path 
 const SNDTXT=['Lyd av','Bare lydeffekter','Lyd og musikk'];
 function au(){
   if(!AU.ctx){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;const c=AU.ctx=new C();
-    AU.master=c.createGain();AU.master.connect(c.destination);AU.sfx=c.createGain();AU.sfx.connect(AU.master);AU.mus=c.createGain();AU.mus.gain.value=0;AU.mus.connect(AU.master);
+    AU.master=c.createGain();const cp=c.createDynamicsCompressor();cp.threshold.value=-10;cp.ratio.value=4;AU.master.connect(cp);cp.connect(c.destination);AU.sfx=c.createGain();AU.sfx.gain.value=1.9;AU.sfx.connect(AU.master);AU.mus=c.createGain();AU.mus.gain.value=0;AU.mus.connect(AU.master);
     const b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AU.noise=b;sndLevel()}catch(e){return null}}
   if(AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});return AU.ctx}
-function sndLevel(){if(!AU.ctx)return;const v=state?state.snd:2,t=AU.ctx.currentTime;AU.master.gain.setTargetAtTime(v>0?.9:0,t,.05);AU.mus.gain.setTargetAtTime(v>1?.55:0,t,.4);if(v<1)Object.keys(AU.loops).forEach(k=>loop(k,false))}
+function sndLevel(){if(!AU.ctx)return;const v=state?state.snd:2,t=AU.ctx.currentTime;AU.master.gain.setTargetAtTime(v>0?1.2:0,t,.05);AU.mus.gain.setTargetAtTime(v>1?1.1:0,t,.4);if(v<1)Object.keys(AU.loops).forEach(k=>loop(k,false))}
 function tone(f,d,type,vol,at,f2){const c=au();if(!c||!state.snd)return;const t=c.currentTime+(at||0),o=c.createOscillator(),g=c.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.1,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AU.sfx);o.start(t);o.stop(t+d+.05)}
 function noise(d,vol,freq,type,at){const c=au();if(!c||!state.snd)return;const t=c.currentTime+(at||0),s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type=type||'lowpass';f.frequency.value=freq||800;
