@@ -195,6 +195,9 @@ final class Life3D: NSObject {
         link?.invalidate(); link = nil
         if running { savePos() }
         running = false
+        // Pilene forsvinner når figuren går ut, før fingeren slippes. Nullstill retningen,
+        // ellers går figuren rett ut igjen neste gang hun kommer inn.
+        dir = (0, 0); vx = 0; vz = 0
         bubble?.isHidden = true
         Sound.shared.loop("water", false)
     }

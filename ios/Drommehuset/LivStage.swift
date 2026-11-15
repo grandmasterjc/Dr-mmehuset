@@ -75,6 +75,7 @@ struct PadKey: View {
             .gesture(DragGesture(minimumDistance: 0)
                 .onChanged { _ in if !down { down = true; on(true) } }
                 .onEnded { _ in down = false; on(false) })
+            .onDisappear { if down { down = false; on(false) } }
             .accessibilityLabel(label)
             .accessibilityAddTraits(.isButton)
     }
