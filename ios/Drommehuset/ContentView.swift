@@ -82,10 +82,13 @@ struct Stage: View {
     @EnvironmentObject var m: GameModel
     var body: some View {
         let s = m.me, f = m.s.feat, fig = Figure(s: s, f: f).svg()
+        let kidSVG: String? = m.tab == "barn" ? Kids.stage(m.s, form: m.me.kid.age < 0 ? m.kform : nil) : nil
         let scene: (String, String)? = m.tab == "hus" ? (m.s.house.view == "inne" ? HouseArt.room(m.s.house.inne.rom, m.s.house.inne[m.s.house.inne.rom], m.s) : HouseArt.house(m.s)) : nil
         ZStack {
             RadialGradient(colors: [Color(hex: "#f5f2f0"), Color(hex: "#ddd7d5"), Color(hex: "#c4bdbb")], center: UnitPoint(x: 0.5, y: 0.28), startRadius: 0, endRadius: 520)
-            if let sc = scene {
+            if let ks = kidSVG {
+                SVGView(svg: ks, viewBox: CGRect(x: 0, y: 0, width: 560, height: 610)).padding(.top, 12)
+            } else if let sc = scene {
                 Color(hex: sc.1)
                 SVGView(svg: sc.0, viewBox: CGRect(x: 0, y: 0, width: 640, height: 400))
             } else if m.faceView {
@@ -94,7 +97,7 @@ struct Stage: View {
                 SVGView(svg: "<g transform=\"translate(150 598) scale(\(js(f.h))) translate(-150 -598)\">\(fig)</g>")
                     .padding(.top, 12)
             }
-            if scene == nil { VStack {
+            if scene == nil && kidSVG == nil { VStack {
                 HStack {
                     if s.oops != nil {
                         StageButton(label: "Fiks det", dark: true) { m.set(\.oops, nil) }
@@ -176,7 +179,7 @@ struct PanelArea: View {
                     case "klaer": KlaerPanel()
                     case "pakke": PakkePanel()
                     case "hus": HusPanel()
-                    case "barn": SnartPanel(title: "Barn")
+                    case "barn": BarnPanel()
                     default: SnartPanel(title: "Liv")
                     }
                 }

@@ -253,3 +253,65 @@ struct HusPanel: View {
         }
     }
 }
+
+struct BarnPanel: View {
+    @EnvironmentObject var m: GameModel
+    var body: some View {
+        let q = m.me, k = q.kid
+        VStack(alignment: .leading, spacing: 16) {
+            if k.age < 0 {
+                let f = m.kform
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("BARN").font(.system(size: 12, weight: .semibold)).kerning(1.6).foregroundStyle(Theme.soft)
+                    Text("\(q.name.isEmpty ? "Hun" : q.name) har ikke barn ennå").font(Theme.title(24))
+                    Text("Velg hvordan barnet skal se ut, gi det et navn og ønsk det velkommen.").font(.system(size: 15))
+                }
+                OptionRow(title: "Barnet er") {
+                    Chip(label: "Jente", on: f.girl) { m.kform.girl = true }
+                    Chip(label: "Gutt", on: !f.girl) { m.kform.girl = false }
+                }
+                OptionRow(title: "Velg barn") {
+                    ForEach(0..<4, id: \.self) { i in
+                        let c = Kids.candidates(m.s, girl: f.girl)[i]
+                        Button { m.kform.c = i } label: {
+                            SVGView(svg: Kids.face(m.s, c), viewBox: CGRect(x: 108, y: 20, width: 84, height: 96), alignBottom: false)
+                                .frame(width: 56, height: 56).background(Color(hex: "#ddd7d5")).clipShape(Circle())
+                                .overlay(Circle().stroke(f.c == i ? Theme.accent : Theme.line, lineWidth: f.c == i ? 2.5 : 1))
+                        }
+                        .buttonStyle(.plain).accessibilityLabel("Barn \(i + 1)")
+                    }
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("NAVN").font(.system(size: 12, weight: .medium)).kerning(1.4).foregroundStyle(Theme.soft)
+                    TextField("Navn", text: Binding(get: { m.kform.name }, set: { m.kform.name = String($0.prefix(12)) })).textFieldStyle(.roundedBorder).frame(maxWidth: 240)
+                }
+                PrimaryButton(label: "Ønsk velkommen") { let n = m.s.welcomeKid(m.kform); m.kform = KidForm(); Haptics.success(); m.say("Du har fått barn: \(n).") }
+            } else {
+                let L = k.look, d = !L.dress.isEmpty && L.dress != "none", cl = m.s.clothColors
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("BARN").font(.system(size: 12, weight: .semibold)).kerning(1.6).foregroundStyle(Theme.soft)
+                    Text(k.name).font(Theme.title(24))
+                    Text(["Baby", "Smårolling", "Stort barn"][min(2, k.age)] + ". " + (k.age == 0 ? "Babyen vokser når du steller den under Liv. Velg farge på babyklærne her." : "Det du velger, får barnet på seg med en gang.")).font(.system(size: 15))
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("NAVN").font(.system(size: 12, weight: .medium)).kerning(1.4).foregroundStyle(Theme.soft)
+                    TextField("Navn", text: Binding(get: { m.me.kid.name }, set: { m.set(\.kid.name, String($0.prefix(12))) })).textFieldStyle(.roundedBorder).frame(maxWidth: 240)
+                }
+                if k.age == 0 {
+                    OptionRow(title: "Babyklær") { ForEach(cl, id: \.self) { c in Swatch(color: c, on: L.topColor == c) { m.set(\.kid.look.topColor, c) } } }
+                } else {
+                    OptionRow(title: "Frisyre") { ForEach(opts([("hestehale", "Hestehale"), ("fletter", "Fletter"), ("kroller", "Krøller"), ("lob", "Halvlangt"), ("langt", "Langt"), ("kort", "Kort"), ("knute", "Knute")])) { o in Chip(label: o.label, on: L.hair == o.id) { m.set(\.kid.look.hair, o.id) } } }
+                    OptionRow(title: "Hårfarge") { ForEach(Pal.hair, id: \.self) { c in Swatch(color: c, on: L.hairColor == c) { m.set(\.kid.look.hairColor, c) } } }
+                    OptionRow(title: "Kjole") { ForEach(opts([("none", "Ingen"), ("enkel", "T-skjortekjole"), ("sommer", "Sommerkjole")])) { o in Chip(label: o.label, on: (L.dress.isEmpty ? "none" : L.dress) == o.id) { m.set(\.kid.look.dress, o.id) } } }
+                    if d { OptionRow(title: "Farge på kjolen") { ForEach(cl, id: \.self) { c in Swatch(color: c, on: L.dressColor == c) { m.set(\.kid.look.dressColor, c) } } } }
+                    OptionRow(title: "Overdel") { ForEach(opts([("tskjorte", "T-skjorte"), ("genser", "Genser"), ("hettegenser", "Hettegenser"), ("singlet", "Topp")])) { o in Chip(label: o.label, on: !d && L.top == o.id) { m.set(\.kid.look.top, o.id); m.set(\.kid.look.dress, "none") } } }
+                    if !d { OptionRow(title: "Farge på overdelen") { ForEach(cl, id: \.self) { c in Swatch(color: c, on: L.topColor == c) { m.set(\.kid.look.topColor, c) } } } }
+                    OptionRow(title: "Underdel") { ForEach(opts([("jeans", "Bukse"), ("shorts", "Shorts"), ("skjort", "Skjørt")])) { o in Chip(label: o.label, on: !d && L.bottom == o.id) { m.set(\.kid.look.bottom, o.id); m.set(\.kid.look.dress, "none") } } }
+                    if !d { OptionRow(title: "Farge på underdelen") { ForEach(cl, id: \.self) { c in Swatch(color: c, on: L.bottomColor == c) { m.set(\.kid.look.bottomColor, c) } } } }
+                    OptionRow(title: "Sko") { ForEach(opts([("sneakers", "Joggesko"), ("ballerina", "Ballerinasko"), ("boots", "Støvler")])) { o in Chip(label: o.label, on: L.shoes == o.id) { m.set(\.kid.look.shoes, o.id) } } }
+                    OptionRow(title: "Farge på skoene") { ForEach(cl, id: \.self) { c in Swatch(color: c, on: L.shoeColor == c) { m.set(\.kid.look.shoeColor, c) } } }
+                }
+            }
+        }
+    }
+}

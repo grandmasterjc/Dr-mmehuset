@@ -10,6 +10,7 @@ final class GameModel: ObservableObject {
     @Published var toast: String? = nil
     @Published var gift: GiftResult? = nil
     @Published var shaking = false
+    @Published var kform = KidForm()
 
     init() {
         s = Store.load()
