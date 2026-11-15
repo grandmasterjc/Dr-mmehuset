@@ -85,7 +85,7 @@ h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .xp b{display:block;height:100%;background:var(--accent)}
 .needs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:5px 16px}
 .nb{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--soft)}
-.nb span{width:54px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nb span{width:66px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nb i{flex:1;height:7px;border-radius:4px;background:var(--chip);overflow:hidden}
 .nb b{display:block;height:100%;background:var(--good);border-radius:4px}
 .nb b.low{background:var(--accent)}
@@ -203,7 +203,7 @@ const LOOK={name:'',skin:SKIN[1],eyes:EYES[0],lips:'none',gloss:false,shadow:'no
   outer:'none',outerColor:CLOTH[5],shoes:'sneakers',shoeColor:CLOTH[0],
   acc:{halskjede:false,oredobber:false,solbriller:false,veske:false,smykker:false,lue:false},oops:null,
   pet:{type:'none',name:'',color:'#e08a3c',glad:70,collar:'none',leash:false},
-  kid:{age:-1,name:'',xp:0,glad:70,girl:true,look:{freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''}}};
+  kid:{age:-1,name:'',xp:0,glad:70,mett:70,girl:true,look:{freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''}}};
 const START=[
  {name:'Nora'},
  {name:'Amina',skin:SKIN[4],hair:'kroller',hairColor:HAIR[0],top:'genser',topColor:CLOTH[9],bottom:'vide',bottomColor:CLOTH[1],shoes:'boots',shoeColor:CLOTH[1]},
@@ -704,13 +704,13 @@ function fire(ev){const g=Gm();let got='';
     g.coins+=pay;g.xp+=taskPay(ev);got=`Oppdrag fullført: ${taskText(ev)}. +${pay} mynter${happy?' med fornøyd-bonus':''}.`;if(level()>l0)got+=` Du nådde nivå ${level()}.`;g.tasks[sl]='';g.tasks[sl]=newTask()});
   if(got)toast(got)}
 function needsHTML(){const n=Gm().needs,p=P(),bar=(t,v)=>`<div class="nb"><span>${t}</span><i><b style="width:${Math.round(v)}%"${v<25?' class="low"':''}></b></i></div>`;
-  return bar('Mett',n.sult)+bar('Energi',n.energi)+bar('Ren',n.hygiene)+bar('Humør',n.humor)+(p.pet.type!=='none'?bar(esc(p.pet.name)||'Dyret',p.pet.glad):'')+(p.kid.age>=0?bar(esc(p.kid.name)||'Barnet',p.kid.glad):'')}
-function hud(){const g=Gm(),n=g.needs,nm=esc(P().name)||'Hun',low=n.sult<25?nm+' er sulten. Lag noe mat.':n.energi<25?nm+' er trøtt og går saktere. Legg deg på soverommet.':n.hygiene<25?nm+' trenger en dusj.':n.humor<25?nm+' kjeder seg. Finn på noe gøy.':'';
+  return bar('Mett',n.sult)+bar('Energi',n.energi)+bar('Ren',n.hygiene)+bar('Humør',n.humor)+(p.pet.type!=='none'?bar(esc(p.pet.name)||'Dyret',p.pet.glad):'')+(p.kid.age>=0?bar((esc(p.kid.name)||'Barnet')+' glad',p.kid.glad)+bar((esc(p.kid.name)||'Barnet')+' mett',p.kid.mett):'')}
+function hud(){const g=Gm(),n=g.needs,nm=esc(P().name)||'Hun',low=n.sult<25?nm+' er sulten. Lag noe mat.':n.energi<25?nm+' er trøtt og går saktere. Legg deg på soverommet.':n.hygiene<25?nm+' trenger en dusj.':n.humor<25?nm+' kjeder seg. Finn på noe gøy.':P().kid.age>=0&&P().kid.mett<25?(esc(P().kid.name)||'Barnet')+' er sulten. Gi barnet mat.':'';
   return `<div class="hud"><div class="hudtop"><span class="coin">${g.coins} mynter</span><span>Nivå ${level()}</span><span class="xp" title="Poeng til neste nivå"><b style="width:${g.xp%100}%"></b></span></div><div class="needs" id="needs">${needsHTML()}</div>${low?`<p class="hint">${low}</p>`:''}</div>`}
 const tasksHTML=()=>row('Oppdrag',`<ul class="tasks">${['a','b','c'].map(sl=>{const t=Gm().tasks[sl];return `<li>${esc(taskText(t))}<span>+${taskPay(t)}</span></li>`}).join('')}</ul>`)+'<p class="hint">Oppdrag gir mynter og poeng. Er alle behov over halvfulle, får du halvannen gang så mange mynter.</p>';
-const kidRow=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food','Gi mat',1))};
+const kidRow=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food',Lf().food?'Gi barnet '+esc(Lf().food.name.toLowerCase()):'Gi mat',1))};
 const petRow=()=>{const pt=P().pet;return pt.type==='none'?'':row(esc(pt.name)||'Kjæledyr',ab('pet','Klapp',1)+ab('petplay','Lek',1)+ab('petfeed','Gi mat',1))};
-function tick(){if(state.tab!=='liv'||flying||cook)return;need('sult',-1.2);need('energi',-.8);need('hygiene',-.7);need('humor',-.9);const pt=P().pet;if(pt.type!=='none')pt.glad=Math.max(0,pt.glad-1);if(P().kid.age>=0)P().kid.glad=Math.max(0,P().kid.glad-.8);
+function tick(){if(state.tab!=='liv'||flying||cook)return;need('sult',-1.2);need('energi',-.8);need('hygiene',-.7);need('humor',-.9);const pt=P().pet;if(pt.type!=='none')pt.glad=Math.max(0,pt.glad-1);if(P().kid.age>=0){P().kid.glad=Math.max(0,P().kid.glad-.8);P().kid.mett=Math.max(0,P().kid.mett-1)}
   if(Lf().pending&&Gm().mail<3&&Math.random()<.35){Gm().mail++;toast('Det har kommet post i postkassa.')}
   else if(Gm().mail<3&&Math.random()<.06){Gm().mail++;toast('Det har kommet post i postkassa.')}
   const e=$('needs');if(e)e.innerHTML=needsHTML();save()}
@@ -1183,6 +1183,14 @@ function kidLook(){const q=state.people[state.cur],k=q.kid,L=k.look||{},g=k.girl
 function buildKid(){clr(G3.kid);G3.krig=null;G3.kid.visible=false;if(P().kid.age<1)return;dl=kidLook();G3.krig=buildMe(G3.kid);dl=null;G3.kid.visible=true}
 function kidStep(dt,now){
   const R=G3.krig;if(!R||!G3.kid.visible)return;const h=Lf()[HK()];if(!G3.kp)G3.kp={x:Math.max(.5,h.x-.5),y:h.y>1.5?3:0,z:Math.max(1.8,h.z),a:0,ph:0};
+  if(G3.kseat){const ks=G3.kseat,hs=G3.kid.scale.y,T=THREE;
+    if(!ks.plate){ks.plate=new T.Group();Cy(ks.plate,13.72,.76,.78,4.35,.13,'#fbfaf7',.15);ks.food=Sp(ks.plate,13.72,.8,4.35,1,'#d9a55a');ks.food.scale.set(.09,.035,.09);Cy(ks.plate,13.62,.76,.9,4.18,.03,'#cfe3ec',.035);G3.scene.add(ks.plate)}
+    ks.t-=dt;const u=Math.max(.05,ks.t/4.5);ks.food.scale.set(.09*u,.035,.09*u);
+    [0,1].forEach(i=>{R.hip[i].rotation.x=-1.5;R.knee[i].rotation.x=1.5;R.foot[i].rotation.x=0;R.arm[i].rotation.x=-.5;R.arm[i].rotation.z=(i?1:-1)*.07;R.elbow[i].rotation.x=-.7});
+    R.arm[1].rotation.x=-.95+Math.sin(now/230)*.3;R.elbow[1].rotation.x=-1.5;R.tr.rotation.set(-.05,0,0);R.bd.position.set(0,0,0);R.tr.position.y=R.ty||1;
+    G3.kid.position.set(13.22,.47-.675*hs,4.35);G3.kid.rotation.y=Math.PI/2;
+    if(ks.t<=0){G3.scene.remove(ks.plate);ks.plate.traverse(c=>{if(c.geometry)c.geometry.dispose()});G3.kseat=null;G3.kp.x=12.75;G3.kp.z=4.35;G3.kp.y=0;G3.kjump=.8;ks.done()}
+    return}
   const kp=G3.kp,tr=G3.trail,me=Lf()[HK()];let t=tr.length>13?tr[tr.length-13]:null,mv=0;
   if(kp.push){t={x:kp.push.x,z:kp.push.z,y:kp.y};if(Math.hypot(t.x-kp.x,t.z-kp.z)<.08)kp.push=null}
   else if(t&&(me.y>1.5)===(kp.y>1.5)){const dn=Math.hypot(t.x-me.x,t.z-me.z);if(dn<.55&&Math.hypot(kp.x-me.x,kp.z-me.z)<.9)t=null}
@@ -1490,10 +1498,15 @@ function act(a){
   if(k==='kidg'){G3.kform.girl=v==='1';return render()}
   if(k==='kidno'){G3.kform=null;return render()}
   if(k==='kidok'){const f=G3.kform;G3.kform=null;const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
-  if(k==='kid'){const kd=p.kid,T={bottle:' drikker flaska si.',cuddle:' koser seg i armene dine.',song:' sovner til sangen din.',play:' ler og hopper.',read:' hører på eventyret.',food:' spiser opp maten sin.'}[v],done=()=>{
+  if(k==='kid'){const kd=p.kid;let T={bottle:' drikker flaska si.',cuddle:' koser seg i armene dine.',song:' sovner til sangen din.',play:' ler og hopper.',read:' hører på eventyret.',food:' spiser opp maten sin.'}[v],done=()=>{
       kd.xp++;kd.glad=Math.min(100,kd.glad+20);need('humor',8);msg=kd.name+T;
       if(kd.age===0&&kd.xp>=4){kd.age=1;msg=kd.name+' har vokst og kan gå selv!';toast(msg)}else if(kd.age===1&&kd.xp>=10){kd.age=2;msg=kd.name+' er blitt et stort barn.';toast(msg)}
       fire('kid');render()};
+    if(v==='bottle')kd.mett=Math.min(100,kd.mett+45);
+    if(v==='food'){const own=l.food,dish=own?own.name.toLowerCase():pick(['grøt','fiskepinner','pannekaker','brødskive med ost','fruktbiter']);if(own)l.food=null;kd.mett=Math.min(100,kd.mett+(own?60:45));
+      T=' spiser '+dish+(own&&own.ok?'. Det smakte kjempegodt!':'.');
+      if(use3()&&l.place==='hjem'&&kd.age>0&&state.house.inne.kjokken.items.spisebord){msg=nm+' setter fram mat til '+kd.name+'.';render();
+        return walkTo(12.7,3.4,0,()=>{if(G3.me)G3.me.rotation.y=Math.atan2(.55,.95);G3.kseat={t:4.5,done:done};msg=kd.name+' spiser '+dish+' ved kjøkkenbordet.';render()})}}
     if(use3()&&l.place==='hjem'&&kd.age===0)return walkTo(9.55,2.3,3,()=>{if(G3.me)G3.me.rotation.y=Math.PI/2;G3.act='bend';G3.actT=1.6;done()});
     if(use3()&&kd.age>0){G3.kjump=1.1;G3.act='bend';G3.actT=1.6}
     return done()}
