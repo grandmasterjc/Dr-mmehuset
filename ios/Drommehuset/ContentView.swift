@@ -85,7 +85,7 @@ struct Stage: View {
         ZStack {
             RadialGradient(colors: [Color(hex: "#f5f2f0"), Color(hex: "#ddd7d5"), Color(hex: "#c4bdbb")], center: UnitPoint(x: 0.5, y: 0.28), startRadius: 0, endRadius: 520)
             if m.faceView {
-                SVGView(svg: fig, viewBox: CGRect(x: 86, y: 0, width: 128, height: 166))
+                SVGView(svg: fig, viewBox: CGRect(x: 86, y: 0, width: 128, height: 166), alignBottom: false)
             } else {
                 SVGView(svg: "<g transform=\"translate(150 598) scale(\(js(f.h))) translate(-150 -598)\">\(fig)</g>")
                     .padding(.top, 12)
