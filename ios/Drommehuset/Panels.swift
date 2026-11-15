@@ -274,7 +274,7 @@ struct BarnPanel: View {
                     ForEach(0..<4, id: \.self) { i in
                         let c = Kids.candidates(m.s, girl: f.girl)[i]
                         Button { m.kform.c = i } label: {
-                            SVGView(svg: Kids.face(m.s, c), viewBox: CGRect(x: 108, y: 20, width: 84, height: 96), alignBottom: false)
+                            SVGView(svg: Kids.face(m.s, c), viewBox: CGRect(x: 94, y: 92, width: 112, height: 116), alignBottom: false)
                                 .frame(width: 56, height: 56).background(Color(hex: "#ddd7d5")).clipShape(Circle())
                                 .overlay(Circle().stroke(f.c == i ? Theme.accent : Theme.line, lineWidth: f.c == i ? 2.5 : 1))
                         }

@@ -20,7 +20,8 @@ struct FlowLayout: Layout {
         let maxW = proposal.width ?? 360
         var x: CGFloat = 0, y: CGFloat = 0, rowH: CGFloat = 0, w: CGFloat = 0
         for v in subviews {
-            let s = v.sizeThatFits(.unspecified)
+            var s = v.sizeThatFits(.unspecified)
+            if s.width > maxW { s = v.sizeThatFits(ProposedViewSize(width: maxW, height: nil)) }
             if x > 0 && x + s.width > maxW { x = 0; y += rowH + spacing; rowH = 0 }
             x += s.width + spacing
             rowH = max(rowH, s.height)
@@ -31,7 +32,8 @@ struct FlowLayout: Layout {
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var x = bounds.minX, y = bounds.minY, rowH: CGFloat = 0
         for v in subviews {
-            let s = v.sizeThatFits(.unspecified)
+            var s = v.sizeThatFits(.unspecified)
+            if s.width > bounds.width { s = v.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil)) }
             if x > bounds.minX && x + s.width > bounds.maxX { x = bounds.minX; y += rowH + spacing; rowH = 0 }
             v.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(s))
             x += s.width + spacing

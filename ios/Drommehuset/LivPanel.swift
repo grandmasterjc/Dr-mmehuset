@@ -75,7 +75,8 @@ struct Hud: View {
 struct TasksView: View {
     @EnvironmentObject var m: GameModel
     var body: some View {
-        OptionRow(title: "Oppdrag") {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("OPPDRAG").font(.system(size: 12, weight: .medium)).kerning(1.4).foregroundStyle(Theme.soft)
             VStack(alignment: .leading, spacing: 6) {
                 ForEach([m.s.game.tasks.a, m.s.game.tasks.b, m.s.game.tasks.c], id: \.self) { t in
                     HStack { Text(GameState.taskText(t)).font(.system(size: 15)); Spacer(); Text("+\(GameState.taskPay(t))").font(.system(size: 14, weight: .semibold)).foregroundStyle(Theme.good) }
