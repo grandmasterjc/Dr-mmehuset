@@ -9,8 +9,9 @@ enum LifeData {
         "stairs": ("Gå opp trappa", 10), "gift": ("Åpne en pakke", 10), "drive": ("Kjør bil til et sted", 15), "mail": ("Hent posten", 10),
         "sendmail": ("Send et brev til noen", 10), "talk": ("Snakk med en venn", 10), "toilet": ("Gå på do", 5), "wash": ("Vask hendene", 5),
         "bath": ("Ta et bad", 15), "cooktog": ("Lag mat og spis sammen med en venn", 30), "nabo": ("Hils på en nabo", 15), "kid": ("Ta deg av barnet", 15),
+        "baker": ("Jobb en vakt i bakeriet", 25), "zoo": ("Jobb en vakt i dyreparken", 25),
     ]
-    static let taskOrder = ["cookperfect", "eat", "friend", "give", "shower", "tv", "sleep", "flyno", "flyut", "pet", "petplay", "petfeed", "adopt", "stairs", "gift", "drive", "mail", "sendmail", "talk", "toilet", "wash", "bath", "cooktog", "nabo", "kid"]
+    static let taskOrder = ["cookperfect", "eat", "friend", "give", "shower", "tv", "sleep", "flyno", "flyut", "pet", "petplay", "petfeed", "adopt", "stairs", "gift", "drive", "mail", "sendmail", "talk", "toilet", "wash", "bath", "cooktog", "nabo", "kid", "baker", "zoo"]
 
     static let recipeOrder = ["pannekaker", "pizza", "taco", "pasta", "vafler", "omelett", "burger", "suppe", "kjottkaker", "frukt", "laks", "wok", "kake"]
     static let recipes: [String: (String, [String], Int)] = [

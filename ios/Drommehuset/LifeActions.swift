@@ -84,6 +84,7 @@ extension GameModel {
                 if s.life.place == "bil" { driveNear = Scenes2D.stops.first { abs($0.x - cx) < 120 }?.key ?? "" }
             }
         }
+        if k.hasPrefix("job") { jobAct(k, v); return }
         if s.life.place == "bil" && ["friend", "petshop", "airport"].contains(k) { fire("drive") }
         switch k {
         case "letterdone": s.life.letter = nil; return

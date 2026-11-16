@@ -140,10 +140,13 @@ struct LivBody: View {
                         if m.s.game.mail == 0 { Hint(t: "Ingen ny post akkurat nå.") }
                     }
                 }
+                OptionRow(title: "Jobb") { AB(a: "job:baker", t: "Jobb i bakeriet", ghost: true); AB(a: "job:zoo", t: "Jobb i dyreparken", ghost: true) }
                 OptionRow(title: "Bil") { AB(a: "drive", t: "Kjør bil", ghost: true) }
                 OptionRow(title: "Reise") { AB(a: "airport", t: "Dra til flyplassen", ghost: true) }
                 OptionRow(title: "Dyr") { AB(a: "petshop", t: "Gå til dyrebutikken", ghost: true) }
                 foodV; msgV
+            } else if l.place == "bakeri" || l.place == "dyrepark" {
+                JobView()
             } else if l.place == "bil" {
                 DriveView()
                 msgV

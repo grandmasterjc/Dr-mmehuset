@@ -26,6 +26,7 @@ final class GameModel: ObservableObject {
     var wx = 320.0, cx = 300.0, wheelAng = 0.0, driveDir = 0.0, driveNear = ""
     let loop2D = Loop2D()
     @Published var ward = false
+    @Published var job: Job? = nil
     var tx: Double? = nil
     var pending: (() -> Void)? = nil
     var ticker: Timer? = nil
@@ -48,6 +49,7 @@ final class GameModel: ObservableObject {
         Sound.shared.evening = s.house.time == "kveld"
         Life3D.hostLookFn = { Scenes2D.hostLook($0, $1) }
         setupLife()
+        if s.life.place == "bakeri" || s.life.place == "dyrepark" { jobAct("job", s.life.place == "bakeri" ? "baker" : "zoo") }
         ticker = Timer.scheduledTimer(withTimeInterval: 6, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {
                 guard let self, self.tab == "liv", self.flying == nil, self.cook == nil else { return }

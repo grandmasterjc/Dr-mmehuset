@@ -85,7 +85,7 @@ struct Scene2DInner: View {
         op.flying = m.flying; op.flyView = m.flyView; op.t = lp.t
         op.driveIn = m.drive.view == "in"; op.dirn = m.drive.dirn; op.beltMe = m.drive.meBelt; op.beltKid = m.drive.kidBelt
         op.ang = m.wheelAng; op.steer = m.driveDir; op.v = m.drive.v
-        let sc = Scenes2D.lifeScene(st, op)
+        let sc = (st.life.place == "bakeri" || st.life.place == "dyrepark") && m.flying == nil ? Jobs.scene(st, m.job) : Scenes2D.lifeScene(st, op)
         return GeometryReader { g in
             SVGView(svg: sc.0, viewBox: CGRect(x: 0, y: 0, width: 640, height: 400))
                 .background(Color(hex: sc.1))
