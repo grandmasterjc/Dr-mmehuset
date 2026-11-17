@@ -13,6 +13,7 @@ final class GameModel: ObservableObject {
     @Published var shaking = false
     @Published var kform = KidForm()
     @Published var newKid = false
+    @Published var kidEdit = false
 
     // Liv
     let life3 = Life3D()
@@ -79,7 +80,7 @@ final class GameModel: ObservableObject {
     /// Velg hvilket barn som er med deg.
     func pickKid(_ i: Int) {
         guard i >= 0 && i < s.me.kids.count else { return }
-        s.people[s.cur].kidSel = i; newKid = false
+        s.people[s.cur].kidSel = i; newKid = false; kidEdit = true
         life3.kbed = false; life3.kseat = nil
     }
 

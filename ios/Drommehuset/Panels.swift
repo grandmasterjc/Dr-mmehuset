@@ -319,8 +319,17 @@ struct BarnPanel: View {
                     PrimaryButton(label: "Ønsk velkommen") { let n = m.s.welcomeKid(m.kform); m.kform = KidForm(); m.newKid = false; Haptics.success(); if !n.isEmpty { m.say("Du har fått barn: \(n).") } }
                     if m.newKid { Chip(label: "Avbryt") { m.newKid = false } }
                 }
+            } else if !m.kidEdit {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("BARN").font(.system(size: 12, weight: .semibold)).kerning(1.6).foregroundStyle(Theme.soft)
+                    Text(k.name + " er med deg").font(Theme.title(24))
+                    Text(["Baby", "Smårolling", "Stort barn"][min(2, k.age)] + ". Trykk på et barn for å kle det på og fikse håret.").font(.system(size: 15))
+                }
+                PrimaryButton(label: k.age == 0 ? "Velg babyklær" : "Kle på og fikse håret") { m.kidEdit = true }
             } else {
                 let L = k.look, d = !L.dress.isEmpty && L.dress != "none", cl = m.s.clothColors
+                Button { m.kidEdit = false; Haptics.tap() } label: { Label("Tilbake", systemImage: "chevron.left").font(.system(size: 15, weight: .medium)) }
+                    .buttonStyle(.bordered).tint(Theme.ink)
                 VStack(alignment: .leading, spacing: 6) {
                     Text("BARN").font(.system(size: 12, weight: .semibold)).kerning(1.6).foregroundStyle(Theme.soft)
                     Text(k.name).font(Theme.title(24))

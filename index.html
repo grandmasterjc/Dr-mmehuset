@@ -1220,14 +1220,15 @@ function kidStage(){
 function barnHTML(){
   const q=P(),k=q.kid,nm=esc(q.name)||'Hun';
   const ks=q.kids||[],tot=ks.length+(k.age>=0?1:0);
-  const list=k.age<0?'':row('Dine barn ('+tot+' av 100)',`<button type="button" class="av${G3.kform?'':' on'}" style="width:56px;height:56px" aria-label="${esc(k.name)}" aria-pressed="${!G3.kform}">${kidFace(k.look)}</button>`+ks.map((c,i)=>`<button type="button" class="av" style="width:56px;height:56px" data-act="kidsel:${i}" aria-label="${esc(c.name)}">${kidFace(c.look)}</button>`).join('')+'<p class="hint">Trykk på et barn for å velge det. Barnet du velger, blir med deg under Liv.</p>'+(G3.kform?'':tot<100?ab('kidnew','Få et barn til',1):'<p class="hint">Du har 100 barn. Det er det meste man kan ha.</p>'));
+  const list=k.age<0?'':row('Dine barn ('+tot+' av 100)',`<button type="button" class="av${G3.kform?'':' on'}" style="width:56px;height:56px" data-act="kidedit" aria-label="${esc(k.name)}" aria-pressed="${!G3.kform}">${kidFace(k.look)}</button>`+ks.map((c,i)=>`<button type="button" class="av" style="width:56px;height:56px" data-act="kidsel:${i}" aria-label="${esc(c.name)}">${kidFace(c.look)}</button>`).join('')+'<p class="hint">Trykk på et barn for å kle det på og fikse håret. Barnet du velger, blir med deg under Liv.</p>'+(G3.kform?'':tot<100?ab('kidnew','Få et barn til',1):'<p class="hint">Du har 100 barn. Det er det meste man kan ha.</p>'));
   if(k.age<0||G3.kform){if(!G3.kform)G3.kform={name:'',girl:true,c:0};const f=G3.kform;
     return (k.age>=0?`<div class="acts">${ab('kidno','← Tilbake',1)}</div>`:'')+list+head('Barn',k.age<0?nm+' har ikke barn ennå':'Et nytt barn','Velg hvordan barnet skal se ut, gi det et navn og ønsk det velkommen.')
       +row('Barnet er',`<button type="button" class="chip${f.girl?' on':''}" data-act="kidg:1">Jente</button><button type="button" class="chip${f.girl?'':' on'}" data-act="kidg:0">Gutt</button>`)
       +row('Velg barn',kidCands(f.girl).map((c,i)=>`<button type="button" class="av${(f.c||0)===i?' on':''}" style="width:56px;height:56px" data-act="kidc:${i}" aria-label="Barn ${i+1}" aria-pressed="${(f.c||0)===i}">${kidFace(c)}</button>`).join(''))
       +`<div class="row"><h2><label for="kidn">Navn</label></h2><input class="txt" id="kidn" maxlength="12" autocomplete="off" value="${esc(f.name)}"></div><div class="acts">${ab('kidok','Ønsk velkommen')}${k.age>=0?ab('kidno','Avbryt',1):''}</div>`}
+  if(!G3.kedit)return list+head('Barn',esc(k.name)+' er med deg',['Baby','Smårolling','Stort barn'][k.age]+'.')+`<div class="acts">${ab('kidedit',k.age===0?'Velg babyklær':'Kle på og fikse håret')}</div>`;
   const b='kid.look.',d=k.look.dress&&k.look.dress!=='none',age=['Baby','Smårolling','Stort barn'][k.age];
-  let o=list+head('Barn',esc(k.name),age+'. '+(k.age===0?'Babyen vokser når du steller den under Liv. Velg farge på babyklærne her.':'Det du velger, får barnet på seg med en gang.'))
+  let o=`<div class="acts">${ab('kidback','← Tilbake',1)}</div>`+head('Barn',esc(k.name),age+'. '+(k.age===0?'Babyen vokser når du steller den under Liv. Velg farge på babyklærne her.':'Det du velger, får barnet på seg med en gang.'))
     +`<div class="row"><h2><label for="kidname">Navn</label></h2><input class="txt" id="kidname" maxlength="12" autocomplete="off" value="${esc(k.name)}"></div>`;
   if(k.age===0)return o+row('Babyklær',sw(b+'topColor',CL()));
   return o+row('Frisyre',chips(b+'hair',[['hestehale','Hestehale'],['fletter','Fletter'],['kroller','Krøller'],['lob','Halvlangt'],['langt','Langt'],['kort','Kort'],['knute','Knute']]))+row('Hårfarge',sw(b+'hairColor',HAIR))
@@ -1596,7 +1597,9 @@ function act(a){
   if(k==='kidnew'){G3.kform={name:'',girl:true,c:0};render();$('panel').scrollTop=0;return}
   if(k==='kidg'){G3.kform.girl=v==='1';return render()}
   if(k==='kidno'){G3.kform=null;return render()}
-  if(k==='kidsel'){const j=+v,o=p.kids&&p.kids[j];if(o){p.kids[j]=p.kid;p.kid=o;G3.kbed=false;G3.kseat=null;msg=o.name+' blir med deg nå.'}return render()}
+  if(k==='kidedit'){G3.kedit=true;render();$('panel').scrollTop=0;return}
+  if(k==='kidback'){G3.kedit=false;return render()}
+  if(k==='kidsel'){const j=+v,o=p.kids&&p.kids[j];if(o){G3.kedit=true;p.kids[j]=p.kid;p.kid=o;G3.kbed=false;G3.kseat=null;msg=o.name+' blir med deg nå.'}return render()}
   if(k==='kidok'){const f=G3.kform;G3.kform=null;if(p.kid.age>=0){p.kids=p.kids||[];if(p.kids.length>=99){msg='Du har 100 barn. Det er det meste man kan ha.';return render()}p.kids.push(p.kid);G3.kbed=false;G3.kseat=null}const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
   if(k==='kid'){if(v==='play'||v==='cuddle')setTimeout(()=>sfx('giggle'),600);const kd=p.kid;let T={bottle:' drikker flaska si.',cuddle:' koser seg i armene dine.',song:' sovner til sangen din.',play:' ler og hopper.',read:' hører på eventyret.',food:' spiser opp maten sin.'}[v],done=()=>{
       kd.xp++;kd.glad=Math.min(100,kd.glad+20);need('humor',8);msg=kd.name+T;
