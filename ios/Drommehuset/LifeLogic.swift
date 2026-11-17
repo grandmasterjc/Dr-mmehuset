@@ -133,7 +133,9 @@ extension GameState {
     mutating func tick() -> String? {
         need("sult", -1.2); need("energi", -0.8); need("hygiene", -0.7); need("humor", -0.9)
         if pet.type != "none" { pet.glad = max(0, pet.glad - 1) }
-        if kid.age >= 0 { kid.glad = max(0, kid.glad - 0.8); kid.mett = max(0, kid.mett - 1) }
+        for i in people[cur].kids.indices {
+            people[cur].kids[i].glad = max(0, people[cur].kids[i].glad - 0.8); people[cur].kids[i].mett = max(0, people[cur].kids[i].mett - 1)
+        }
         if !life.pending.isEmpty && game.mail < 3 && Double.random(in: 0..<1) < 0.35 { game.mail += 1; return "Det har kommet post i postkassa." }
         if game.mail < 3 && Double.random(in: 0..<1) < 0.06 { game.mail += 1; return "Det har kommet post i postkassa." }
         return nil

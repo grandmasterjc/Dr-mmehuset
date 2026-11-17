@@ -63,7 +63,7 @@ enum Kids {
         let q = st.people[st.cur], k = q.kid
         let par = Figure(s: q, f: Feats.people[min(st.cur, Feats.people.count - 1)]).svg()
         var o = "<svg viewBox=\"0 0 560 610\" preserveAspectRatio=\"xMidYMax meet\" role=\"img\" aria-label=\"Barnet ditt\">\(GDEFS)<g transform=\"translate(-20 0)\">\(par)</g>"
-        if k.age < 0, let f = form {
+        if let f = form {
             let c = candidates(st, girl: f.girl)[f.c]
             o += baby(c.topColor, c.skin, c.hairColor, 400, 520, 1.4)
         } else if k.age == 0 {
@@ -81,8 +81,11 @@ extension GameState {
     mutating func welcomeKid(_ f: KidForm) -> String {
         let cd = Kids.candidates(self, girl: f.girl)[f.c]
         let nm = f.name.trimmingCharacters(in: .whitespaces)
-        me.kid = Kid(age: 0, name: nm.isEmpty ? (f.girl ? "Lillemor" : "Lillebror") : nm, xp: 0, glad: 85, mett: 70, girl: f.girl, look: cd)
+        let k = Kid(age: 0, name: nm.isEmpty ? (f.girl ? "Lillemor" : "Lillebror") : nm, xp: 0, glad: 85, mett: 70, girl: f.girl, look: cd)
+        if people[cur].kids.count >= Look.maxKids { return "" }
+        people[cur].kids.append(k)
+        people[cur].kidSel = people[cur].kids.count - 1
         need("humor", 30)
-        return me.kid.name
+        return k.name
     }
 }

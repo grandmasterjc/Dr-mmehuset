@@ -259,11 +259,37 @@ struct BarnPanel: View {
     var body: some View {
         let q = m.me, k = q.kid
         VStack(alignment: .leading, spacing: 16) {
-            if k.age < 0 {
+            if !q.kids.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("DINE BARN (\(q.kids.count) AV \(Look.maxKids))").font(.system(size: 12, weight: .medium)).kerning(1.4).foregroundStyle(Theme.soft)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        LazyHStack(spacing: 10) {
+                            ForEach(q.kids.indices, id: \.self) { i in
+                                let on = i == q.kidSel && !m.newKid
+                                Button { m.pickKid(i) } label: {
+                                    VStack(spacing: 3) {
+                                        SVGView(svg: Kids.face(m.s, q.kids[i].look), viewBox: CGRect(x: 94, y: 92, width: 112, height: 116), alignBottom: false)
+                                            .frame(width: 50, height: 50).background(Color(hex: "#ddd7d5")).clipShape(Circle())
+                                            .overlay(Circle().stroke(on ? Theme.accent : Theme.line, lineWidth: on ? 2.5 : 1))
+                                        Text(q.kids[i].name).font(.system(size: 11)).lineLimit(1).frame(width: 60)
+                                    }
+                                }
+                                .buttonStyle(.plain).accessibilityLabel(q.kids[i].name)
+                            }
+                        }
+                        .padding(2)
+                    }
+                    if !m.newKid {
+                        if q.kids.count < Look.maxKids { Chip(label: "Få et barn til") { m.kform = KidForm(); m.newKid = true } }
+                        else { Text("Du har \(Look.maxKids) barn. Det er det meste man kan ha.").font(.system(size: 14)).foregroundStyle(Theme.soft) }
+                    }
+                }
+            }
+            if k.age < 0 || m.newKid {
                 let f = m.kform
                 VStack(alignment: .leading, spacing: 6) {
                     Text("BARN").font(.system(size: 12, weight: .semibold)).kerning(1.6).foregroundStyle(Theme.soft)
-                    Text("\(q.name.isEmpty ? "Hun" : q.name) har ikke barn ennå").font(Theme.title(24))
+                    Text(q.kids.isEmpty ? "\(q.name.isEmpty ? "Hun" : q.name) har ikke barn ennå" : "Et nytt barn").font(Theme.title(24))
                     Text("Velg hvordan barnet skal se ut, gi det et navn og ønsk det velkommen.").font(.system(size: 15))
                 }
                 OptionRow(title: "Barnet er") {
@@ -285,7 +311,10 @@ struct BarnPanel: View {
                     Text("NAVN").font(.system(size: 12, weight: .medium)).kerning(1.4).foregroundStyle(Theme.soft)
                     TextField("Navn", text: Binding(get: { m.kform.name }, set: { m.kform.name = String($0.prefix(12)) })).textFieldStyle(.roundedBorder).frame(maxWidth: 240)
                 }
-                PrimaryButton(label: "Ønsk velkommen") { let n = m.s.welcomeKid(m.kform); m.kform = KidForm(); Haptics.success(); m.say("Du har fått barn: \(n).") }
+                HStack {
+                    PrimaryButton(label: "Ønsk velkommen") { let n = m.s.welcomeKid(m.kform); m.kform = KidForm(); m.newKid = false; Haptics.success(); if !n.isEmpty { m.say("Du har fått barn: \(n).") } }
+                    if m.newKid { Chip(label: "Avbryt") { m.newKid = false } }
+                }
             } else {
                 let L = k.look, d = !L.dress.isEmpty && L.dress != "none", cl = m.s.clothColors
                 VStack(alignment: .leading, spacing: 6) {

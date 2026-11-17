@@ -12,6 +12,7 @@ final class GameModel: ObservableObject {
     @Published var gift: GiftResult? = nil
     @Published var shaking = false
     @Published var kform = KidForm()
+    @Published var newKid = false
 
     // Liv
     let life3 = Life3D()
@@ -68,7 +69,14 @@ final class GameModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) { [weak self] in if self?.toast == id { self?.toast = nil } }
     }
 
-    func choose(_ i: Int) { s.cur = i; gift = nil; ask = nil }
+    func choose(_ i: Int) { s.cur = i; gift = nil; ask = nil; newKid = false }
+
+    /// Velg hvilket barn som er med deg.
+    func pickKid(_ i: Int) {
+        guard i >= 0 && i < s.me.kids.count else { return }
+        s.people[s.cur].kidSel = i; newKid = false
+        life3.kbed = false; life3.kseat = nil
+    }
 
     func buy(_ id: String) {
         guard let it = Shop.item(id) else { return }

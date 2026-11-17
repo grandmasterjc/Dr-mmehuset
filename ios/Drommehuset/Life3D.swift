@@ -132,7 +132,9 @@ final class Life3D: NSObject {
             sun.light?.intensity = CGFloat(built.sun * 1500)
             if act == "shower" { built.water?.isHidden = false }
         }
-        var me0 = s.me; me0.oops = nil; me0.pet.glad = 0; me0.kid.glad = 0; me0.kid.mett = 0; me0.kid.xp = 0
+        var me0 = s.me; me0.oops = nil; me0.pet.glad = 0
+        var k0 = s.kid; k0.glad = 0; k0.mett = 0; k0.xp = 0
+        me0.kids = k0.age >= 0 ? [k0] : []; me0.kidSel = 0
         let ck = "\(s.cur)\(String(describing: me0))"
         let p = away ? l.f3 : l.h3
         if ck != ckey {

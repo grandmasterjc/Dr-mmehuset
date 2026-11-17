@@ -230,7 +230,14 @@ struct PetRow: View {
 struct KidRow: View {
     @EnvironmentObject var m: GameModel
     var body: some View {
-        let kd = m.s.kid
+        let kd = m.s.kid, all = m.s.me.kids
+        if all.count > 1 {
+            OptionRow(title: "Barnet som er med deg") {
+                Menu {
+                    ForEach(all.indices, id: \.self) { i in Button(all[i].name) { m.pickKid(i) } }
+                } label: { Chip(label: kd.name + " · bytt (\(all.count) barn)") {} }
+            }
+        }
         if kd.age < 0 {
             OptionRow(title: "Familie") { Chip(label: "Få et barn (fanen Barn)") { m.tab = "barn" } }
         } else if kd.age == 0 {

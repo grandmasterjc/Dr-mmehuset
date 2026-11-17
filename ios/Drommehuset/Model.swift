@@ -44,7 +44,17 @@ struct Look: Codable, Equatable {
     var acc = Acc()
     var oops: String? = nil
     var pet = Pet()
-    var kid = Kid()
+    /// Alle barna (opptil 100). kidSel er barnet som er med deg nå.
+    var kids: [Kid] = []
+    var kidSel = 0
+    var kid: Kid {
+        get { kidSel >= 0 && kidSel < kids.count ? kids[kidSel] : Kid() }
+        set {
+            if kidSel >= 0 && kidSel < kids.count { kids[kidSel] = newValue }
+            else if newValue.age >= 0 { kids.append(newValue); kidSel = kids.count - 1 }
+        }
+    }
+    static let maxKids = 100
 }
 
 struct Needs: Codable, Equatable { var sult = 70.0, energi = 80.0, hygiene = 75.0, humor = 70.0 }
@@ -203,7 +213,7 @@ enum Store {
 
     static func merge(_ d: Any, _ s: Any?) -> Any {
         guard let dd = d as? [String: Any] else {
-            if let s = s, !(s is NSNull) { return type(of: s) == type(of: d) || (s is NSNumber && d is NSNumber) || (s is String && d is String) ? s : d }
+            if let s = s, !(s is NSNull) { return type(of: s) == type(of: d) || (s is NSNumber && d is NSNumber) || (s is String && d is String) || (s is [Any] && d is [Any]) ? s : d }
             return d
         }
         let sd = s as? [String: Any] ?? [:]
@@ -224,7 +234,19 @@ enum Store {
         // personer flettes én og én
         let sp = (saved as? [String: Any])?["people"] as? [Any] ?? []
         let dp = defObj["people"] as? [Any] ?? []
-        defObj["people"] = dp.enumerated().map { i, p in merge(p, i < sp.count ? sp[i] : nil) }
+        let kidDef = (try? JSONEncoder().encode(Kid())).flatMap { try? JSONSerialization.jsonObject(with: $0) } ?? [:]
+        defObj["people"] = dp.enumerated().map { i, p -> Any in
+            let saved = i < sp.count ? sp[i] as? [String: Any] : nil
+            guard var o = merge(p, saved) as? [String: Any] else { return p }
+            o.removeValue(forKey: "kid")
+            // gamle lagringer hadde ett barn i "kid"
+            var ks = (saved?["kids"] as? [Any]) ?? []
+            if ks.isEmpty, let old = saved?["kid"] as? [String: Any], (old["age"] as? NSNumber)?.intValue ?? -1 >= 0 { ks = [old] }
+            o["kids"] = ks.map { merge(kidDef, $0) }
+            let sel = (o["kidSel"] as? NSNumber)?.intValue ?? 0
+            o["kidSel"] = max(0, min(sel, ks.count - 1))
+            return o
+        }
         var savedObj = saved as? [String: Any] ?? [:]
         savedObj.removeValue(forKey: "people")
         var merged = merge(defObj, savedObj) as? [String: Any] ?? defObj

@@ -82,7 +82,7 @@ struct Stage: View {
     @EnvironmentObject var m: GameModel
     var body: some View {
         let s = m.me, f = m.s.feat, fig = Figure(s: s, f: f).svg()
-        let kidSVG: String? = m.tab == "barn" ? Kids.stage(m.s, form: m.me.kid.age < 0 ? m.kform : nil) : nil
+        let kidSVG: String? = m.tab == "barn" ? Kids.stage(m.s, form: (m.me.kid.age < 0 || m.newKid) ? m.kform : nil) : nil
         let scene: (String, String)? = m.tab == "hus" ? (m.s.house.view == "inne" ? HouseArt.room(m.s.house.inne.rom, m.s.house.inne[m.s.house.inne.rom], m.s) : HouseArt.house(m.s)) : nil
         ZStack {
             RadialGradient(colors: [Color(hex: "#f5f2f0"), Color(hex: "#ddd7d5"), Color(hex: "#c4bdbb")], center: UnitPoint(x: 0.5, y: 0.28), startRadius: 0, endRadius: 520)
