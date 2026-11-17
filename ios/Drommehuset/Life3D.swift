@@ -217,6 +217,7 @@ final class Life3D: NSObject {
         path = nil; after = nil
         if !carry { setCarry(true) }
         act = "baby"; babyKind = v; actDone = done
+        me.rot(0, 0, 0)
         actT = v == "song" ? Sound.songLength : v == "bottle" ? 4.5 : 3.4
         props3(); props?.isHidden = false; bowl.isHidden = true; ball?.isHidden = true; hearts.forEach { $0.isHidden = true }
         bottle?.isHidden = v != "bottle"
