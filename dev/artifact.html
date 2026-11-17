@@ -276,7 +276,7 @@ const up=s=>s&&s.v===2?Object.assign({},s,{v:3,people:[s]}):s;
 function load(extra){let s=null;
   try{s=JSON.parse(localStorage.getItem('studio-ida-v3'))||up(JSON.parse(localStorage.getItem('studio-ida-v2')))}catch(e){}
   if(extra&&(extra.v===3||extra.v===2))s=up(extra);if(!s||s.v!==3)s=null;
-  const st=merge(DEF,s);st.people=START.map((d,i)=>merge(merge(LOOK,d),s&&s.people&&s.people[i]));
+  const st=merge(DEF,s);st.people=START.map((d,i)=>{const sp=s&&s.people&&s.people[i],o=merge(merge(LOOK,d),sp);o.kids=sp&&Array.isArray(sp.kids)?sp.kids.filter(x=>x&&typeof x==='object'&&x.age>=0).slice(0,99).map(x=>merge(LOOK.kid,x)):[];return o});
   if(!(st.cur>=0&&st.cur<NP))st.cur=0;
   if(!st.tubv){st.house.inne.bad.items.badekar=true;st.tubv=1}
   st.extra={};['cloth','hair','wall','furn','band','art'].forEach(k=>{const a=s&&s.extra&&s.extra[k];st.extra[k]=Array.isArray(a)?a.filter(v=>typeof v==='string'&&/^[#g][0-9a-f]{1,6}$/i.test(v)).slice(0,14):[]});return st}
@@ -744,7 +744,8 @@ function needsHTML(){const n=Gm().needs,p=P(),bar=(t,v)=>`<div class="nb"><span>
 function hud(){const g=Gm(),n=g.needs,nm=esc(P().name)||'Hun',low=n.sult<25?nm+' er sulten. Lag noe mat.':n.energi<25?nm+' er trøtt og går saktere. Legg deg på soverommet.':n.hygiene<25?nm+' trenger en dusj.':n.humor<25?nm+' kjeder seg. Finn på noe gøy.':P().kid.age>=0&&P().kid.mett<25?(esc(P().kid.name)||'Barnet')+' er sulten. Gi barnet mat.':'';
   return `<div class="hud"><div class="hudtop"><span class="coin">${g.coins} mynter</span><span>Nivå ${level()}</span><span class="xp" title="Poeng til neste nivå"><b style="width:${g.xp%100}%"></b></span></div><div class="needs" id="needs">${needsHTML()}</div>${low?`<p class="hint">${low}</p>`:''}</div>`}
 const tasksHTML=()=>row('Oppdrag',`<ul class="tasks">${['a','b','c'].map(sl=>{const t=Gm().tasks[sl];return `<li>${esc(taskText(t))}<span>+${taskPay(t)}</span></li>`}).join('')}</ul>`)+'<p class="hint">Oppdrag gir mynter og poeng. Er alle behov over halvfulle, får du halvannen gang så mange mynter.</p>';
-const kidRow=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food',Lf().food?'Gi barnet '+esc(Lf().food.name.toLowerCase()):'Gi mat',1))};
+const kidRow=()=>kidRow0()+((P().kids||[]).length?row('Flere barn','<button type="button" class="chip" data-tab="barn">Bytt barn (fanen Barn)</button>'):'');
+const kidRow0=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food',Lf().food?'Gi barnet '+esc(Lf().food.name.toLowerCase()):'Gi mat',1))};
 const petRow=()=>{const pt=P().pet;return pt.type==='none'?'':row(esc(pt.name)||'Kjæledyr',ab('pet','Klapp',1)+ab('petplay','Lek',1)+ab('petfeed','Gi mat',1)+(use3()&&Lf().place==='hjem'?ab('petbed',G3.petBed?'Kall på '+esc(pt.name):'Send til '+(pt.type==='hund'?'hundesenga':'senga'),1):''))};
 function tick(){if(state.tab!=='liv'||flying||cook)return;need('sult',-1.2);need('energi',-.8);need('hygiene',-.7);need('humor',-.9);const pt=P().pet;if(pt.type!=='none')pt.glad=Math.max(0,pt.glad-1);if(P().kid.age>=0){P().kid.glad=Math.max(0,P().kid.glad-.8);P().kid.mett=Math.max(0,P().kid.mett-1)}
   if(Lf().pending&&Gm().mail<3&&Math.random()<.35){Gm().mail++;toast('Det har kommet post i postkassa.')}
@@ -1191,24 +1192,26 @@ function kidCands(girl){const q=state.people[state.cur],si=SKIN.indexOf(q.skin),
   return [{skin:sk(0),eyes:ey(1),hairColor:hc(2),hair:girl?'hestehale':'kort',freckles:true},{skin:sk(1),eyes:ey(2),hairColor:hc(1),hair:girl?'fletter':'kroller'},{skin:sk(-1),eyes:ey(3),hairColor:hc(4),hair:girl?'lob':'kort'},{skin:sk(2),eyes:ey(4),hairColor:hc(-1),hair:girl?'kroller':'kort'}]
     .map((c,i)=>Object.assign(c,{top:'tskjorte',topColor:girl?['#c97b84','#c9a227','#7fa3c7','#5d7a5e'][i]:['#7fa3c7','#5d7a5e','#c9a227','#9b3b47'][i],bottom:girl?'skjort':'shorts',bottomColor:girl?'#9b3b47':'#34507a',shoes:'sneakers',shoeColor:'#f5f3ee'}))}
 function kidFace(L){const q=state.people[state.cur],k=q.kid;const sv=q.kid;q.kid=Object.assign({},k,{look:Object.assign({},k.look||{},L)});dl=kidLook();const g=girl();dl=null;q.kid=sv;
-  return `<svg viewBox="108 20 84 96" aria-hidden="true">${GDEFS}${g}</svg>`}
+  return `<svg viewBox="94 92 112 116" aria-hidden="true">${GDEFS}${g}</svg>`}
 function babySVG(L,sk,hc,x,y,k){return `<g transform="translate(${x} ${y}) scale(${k})"><ellipse cx="0" cy="40" rx="62" ry="10" fill="#000" opacity=".12"/><path d="M-58 30Q-60 -10 -20 -22L40 -22Q62 -10 60 30Z" fill="${L.topColor||'#e9cfd0'}"/><path d="M-20 -22Q10 0 40 -22" stroke="#0002" fill="none"/>`
   +`<circle cx="-30" cy="-40" r="30" fill="${sk}"/><path d="M-56 -50Q-50 -76 -26 -72Q-8 -70 -4 -54Q-20 -66 -40 -60Z" fill="${hc}"/><circle cx="-40" cy="-40" r="2.6" fill="#1d1020"/><circle cx="-22" cy="-40" r="2.6" fill="#1d1020"/><path d="M-36 -28Q-31 -24 -26 -28" stroke="#b5616a" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="-46" cy="-32" r="5" fill="#ff9bb0" opacity=".45"/><circle cx="-16" cy="-32" r="5" fill="#ff9bb0" opacity=".45"/></g>`}
 function kidStage(){
   const q=P(),k=q.kid,par=girl();let o=`<svg viewBox="0 0 560 610" preserveAspectRatio="xMidYMax meet" role="img" aria-label="Barnet ditt">${GDEFS}<g transform="translate(-20 0)">${par}</g>`;
-  if(k.age<0&&G3.kform){const c=kidCands(G3.kform.girl)[G3.kform.c||0],L=Object.assign({},c);o+=babySVG(L,c.skin,c.hairColor,400,520,1.4)}
+  if(G3.kform){const c=kidCands(G3.kform.girl)[G3.kform.c||0],L=Object.assign({},c);o+=babySVG(L,c.skin,c.hairColor,400,520,1.4)}
   else if(k.age===0){const L=kidLook();o+=babySVG(k.look||{},L.skin,L.hairColor,400,520,1.4)}
   else if(k.age>0){dl=kidLook();const g=girl();dl=null;const s=k.age>1?.68:.55;o+=`<g transform="translate(${(420-150*s).toFixed(0)} ${(598-598*s).toFixed(0)}) scale(${s})">${g}</g>`}
   return o+'</svg>'}
 function barnHTML(){
   const q=P(),k=q.kid,nm=esc(q.name)||'Hun';
-  if(k.age<0){if(!G3.kform)G3.kform={name:'',girl:true,c:0};const f=G3.kform;
-    return head('Barn',nm+' har ikke barn ennå','Velg hvordan barnet skal se ut, gi det et navn og ønsk det velkommen.')
+  const ks=q.kids||[],tot=ks.length+(k.age>=0?1:0);
+  const list=k.age<0?'':row('Dine barn ('+tot+' av 100)',`<button type="button" class="av${G3.kform?'':' on'}" style="width:56px;height:56px" aria-label="${esc(k.name)}" aria-pressed="${!G3.kform}">${kidFace(k.look)}</button>`+ks.map((c,i)=>`<button type="button" class="av" style="width:56px;height:56px" data-act="kidsel:${i}" aria-label="${esc(c.name)}">${kidFace(c.look)}</button>`).join('')+'<p class="hint">Trykk på et barn for å velge det. Barnet du velger, blir med deg under Liv.</p>'+(G3.kform?'':tot<100?ab('kidnew','Få et barn til',1):'<p class="hint">Du har 100 barn. Det er det meste man kan ha.</p>'));
+  if(k.age<0||G3.kform){if(!G3.kform)G3.kform={name:'',girl:true,c:0};const f=G3.kform;
+    return list+head('Barn',k.age<0?nm+' har ikke barn ennå':'Et nytt barn','Velg hvordan barnet skal se ut, gi det et navn og ønsk det velkommen.')
       +row('Barnet er',`<button type="button" class="chip${f.girl?' on':''}" data-act="kidg:1">Jente</button><button type="button" class="chip${f.girl?'':' on'}" data-act="kidg:0">Gutt</button>`)
       +row('Velg barn',kidCands(f.girl).map((c,i)=>`<button type="button" class="av${(f.c||0)===i?' on':''}" style="width:56px;height:56px" data-act="kidc:${i}" aria-label="Barn ${i+1}" aria-pressed="${(f.c||0)===i}">${kidFace(c)}</button>`).join(''))
-      +`<div class="row"><h2><label for="kidn">Navn</label></h2><input class="txt" id="kidn" maxlength="12" autocomplete="off" value="${esc(f.name)}"></div><div class="acts">${ab('kidok','Ønsk velkommen')}</div>`}
+      +`<div class="row"><h2><label for="kidn">Navn</label></h2><input class="txt" id="kidn" maxlength="12" autocomplete="off" value="${esc(f.name)}"></div><div class="acts">${ab('kidok','Ønsk velkommen')}${k.age>=0?ab('kidno','Avbryt',1):''}</div>`}
   const b='kid.look.',d=k.look.dress&&k.look.dress!=='none',age=['Baby','Smårolling','Stort barn'][k.age];
-  let o=head('Barn',esc(k.name),age+'. '+(k.age===0?'Babyen vokser når du steller den under Liv. Velg farge på babyklærne her.':'Det du velger, får barnet på seg med en gang.'))
+  let o=list+head('Barn',esc(k.name),age+'. '+(k.age===0?'Babyen vokser når du steller den under Liv. Velg farge på babyklærne her.':'Det du velger, får barnet på seg med en gang.'))
     +`<div class="row"><h2><label for="kidname">Navn</label></h2><input class="txt" id="kidname" maxlength="12" autocomplete="off" value="${esc(k.name)}"></div>`;
   if(k.age===0)return o+row('Babyklær',sw(b+'topColor',CL()));
   return o+row('Frisyre',chips(b+'hair',[['hestehale','Hestehale'],['fletter','Fletter'],['kroller','Krøller'],['lob','Halvlangt'],['langt','Langt'],['kort','Kort'],['knute','Knute']]))+row('Hårfarge',sw(b+'hairColor',HAIR))
@@ -1577,7 +1580,8 @@ function act(a){
   if(k==='kidnew'){G3.kform={name:'',girl:true,c:0};render();$('panel').scrollTop=0;return}
   if(k==='kidg'){G3.kform.girl=v==='1';return render()}
   if(k==='kidno'){G3.kform=null;return render()}
-  if(k==='kidok'){const f=G3.kform;G3.kform=null;const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
+  if(k==='kidsel'){const j=+v,o=p.kids&&p.kids[j];if(o){p.kids[j]=p.kid;p.kid=o;G3.kbed=false;G3.kseat=null;msg=o.name+' blir med deg nå.'}return render()}
+  if(k==='kidok'){const f=G3.kform;G3.kform=null;if(p.kid.age>=0){p.kids=p.kids||[];if(p.kids.length>=99){msg='Du har 100 barn. Det er det meste man kan ha.';return render()}p.kids.push(p.kid);G3.kbed=false;G3.kseat=null}const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
   if(k==='kid'){if(v==='play'||v==='cuddle')setTimeout(()=>sfx('giggle'),600);const kd=p.kid;let T={bottle:' drikker flaska si.',cuddle:' koser seg i armene dine.',song:' sovner til sangen din.',play:' ler og hopper.',read:' hører på eventyret.',food:' spiser opp maten sin.'}[v],done=()=>{
       kd.xp++;kd.glad=Math.min(100,kd.glad+20);need('humor',8);msg=kd.name+T;
       if(kd.age===0&&kd.xp>=4){kd.age=1;msg=kd.name+' har vokst og kan gå selv!';toast(msg)}else if(kd.age===1&&kd.xp>=10){kd.age=2;msg=kd.name+' er blitt et stort barn.';toast(msg)}
@@ -1829,7 +1833,7 @@ function render(){
   $('fix').hidden=!(P().oops||state.rain);
   $('foot').hidden=v==='hus'||v==='liv'||v==='barn';$('pname').textContent=P().name;
   $('people').innerHTML=state.people.map((q,i)=>{di=i;const g=girl();di=null;
-    return `<button type="button" class="av${i===state.cur?' on':''}" id="av-${i}" data-person="${i}" aria-label="${esc(q.name)||'Person '+(i+1)}" aria-pressed="${i===state.cur}"><svg viewBox="108 20 84 96" aria-hidden="true">${GDEFS}${g}</svg></button>`}).join('');
+    return `<button type="button" class="av${i===state.cur?' on':''}" id="av-${i}" data-person="${i}" aria-label="${esc(q.name)||'Person '+(i+1)}" aria-pressed="${i===state.cur}"><svg viewBox="94 92 112 116" aria-hidden="true">${GDEFS}${g}</svg></button>`}).join('');
   $('zoom').hidden=v==='hus'||v==='barn'||(v==='liv'&&!g3);$('zoom').textContent=g3?(G3.far?'Følg personen':'Oversikt'):v==='face'?'Hel figur':'Nærbilde';
   $('tabs').innerHTML=TABS.map(([id,l])=>`<button type="button" class="tab" role="tab" id="tab-${id}" aria-selected="${state.tab===id}" data-tab="${id}">${l}</button>`).join('');
   const sc=$('panel').scrollTop;
