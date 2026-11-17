@@ -259,6 +259,10 @@ struct BarnPanel: View {
     var body: some View {
         let q = m.me, k = q.kid
         VStack(alignment: .leading, spacing: 16) {
+            if m.newKid && k.age >= 0 {
+                Button { m.newKid = false; Haptics.tap() } label: { Label("Tilbake", systemImage: "chevron.left").font(.system(size: 15, weight: .medium)) }
+                    .buttonStyle(.bordered).tint(Theme.ink)
+            }
             if !q.kids.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("DINE BARN (\(q.kids.count) AV \(Look.maxKids))").font(.system(size: 12, weight: .medium)).kerning(1.4).foregroundStyle(Theme.soft)
