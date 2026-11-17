@@ -72,6 +72,8 @@ final class Life3D: NSObject {
     var actT = 0.0
     var actDone: (() -> Void)? = nil
     var towel = false, kbed = false, petBed = false, ward = false
+    var carry = false, babyKind = "", songT0 = 0.0
+    var baby: SCNNode? = nil, bottle: SCNNode? = nil
     var petJump = 0.0, kjump = 0.0
     var kseat: KidSeat? = nil
     var kp: KidMover? = nil
@@ -122,11 +124,12 @@ final class Life3D: NSObject {
     func sync() {
         guard let m = m else { return }
         let s = m.s, l = s.life, H = s.house
-        let k = "\(away ? String(l.friend) : String(describing: H.inne))|\(s.kid.age)|\(s.pet.type)|\(s.pet.collar)|\(H.time)|\(H.wall)|\(H.door)|\(H.roofColor)|\(l.tv)|\(s.rain)"
+        if (away || s.kid.age != 0) && carry { carry = false; baby?.isHidden = true; if act == "baby" { endAct(quiet: true) } }
+        let k = "\(away ? String(l.friend) : String(describing: H.inne))|\(s.kid.age)|\(s.pet.type)|\(s.pet.collar)|\(H.time)|\(H.wall)|\(H.door)|\(H.roofColor)|\(l.tv)|\(s.rain)|\(carry)"
         if k != key {
             key = k
             let hs = away ? Build3D.friendHouse(l.friend, H) : H
-            built = Build3D.build(house, H: hs, away: away, me: s.me, tv: l.tv, rain: s.rain, act: act)
+            built = Build3D.build(house, H: hs, away: away, me: s.me, tv: l.tv, rain: s.rain, act: act, babyCarried: carry)
             scene.background.contents = built.sky
             amb.light?.intensity = CGFloat(built.hemi * 1000)
             sun.light?.intensity = CGFloat(built.sun * 1500)
@@ -170,6 +173,54 @@ final class Life3D: NSObject {
     func buildMe() {
         guard let s = m?.s else { return }
         rig = Figure3D.build(me, s: s.me, f: s.feat, child: false, towel: towel)
+        buildBaby()
+    }
+
+    /// Babyen i armene (vises bare når du bærer den).
+    func buildBaby() {
+        guard let s = m?.s, let R = rig else { return }
+        let k = s.kid, L = Kids.look(s).0
+        let g = SCNNode()
+        let top = !k.look.topColor.isEmpty ? k.look.topColor : (k.girl ? "#e9cfd0" : "#cfd9e3")
+        let b = Sp(g, 0.03, 0.12, 0.23, 1, top); b.scale = v3(0.15, 0.085, 0.095)
+        let t = Sp(g, 0.19, 0.1, 0.23, 1, top); t.scale = v3(0.06, 0.06, 0.07)
+        Sp(g, -0.13, 0.17, 0.23, 0.068, L.skin)
+        let hh = Sp(g, -0.15, 0.2, 0.22, 1, L.hairColor); hh.scale = v3(0.06, 0.045, 0.062)
+        for d in [-1.0, 1.0] { Sp(g, -0.105, 0.18, 0.23 + d * 0.025 + 0.04, 0.008, "#1d1020") }
+        Sp(g, -0.08, 0.16, 0.29, 0.012, "#ff9bb0")
+        let bt = SCNNode()
+        Cy(bt, 0, -0.06, 0.06, 0, 0.022, "#fbfaf7"); Cy(bt, 0, 0.06, 0.08, 0, 0.018, "#7fb8d6"); Cy(bt, 0, 0.08, 0.11, 0, 0.007, "#e9c27a", 0.012)
+        bt.position = v3(-0.03, 0.22, 0.3); bt.eulerAngles.z = 1.1
+        bt.isHidden = true
+        g.addChildNode(bt)
+        g.position = v3(0, 0.02, 0)
+        g.isHidden = !carry
+        R.tr.addChildNode(g)
+        baby = g; bottle = bt
+    }
+
+    /// Armene holder babyen.
+    func cradle(_ R: Rig) {
+        R.arm[0].rot(-0.95, 0, 0.32); R.elbow[0].rx = -1.25
+        R.arm[1].rot(-0.75, 0, -0.38); R.elbow[1].rx = -1.45
+    }
+
+    func setCarry(_ on: Bool) {
+        carry = on
+        baby?.isHidden = !on
+        sync()
+    }
+
+    /// Kos, flaske eller sang med babyen i armene.
+    func startBaby(_ v: String, _ done: @escaping () -> Void) {
+        endAct(quiet: true)
+        path = nil; after = nil
+        if !carry { setCarry(true) }
+        act = "baby"; babyKind = v; actDone = done
+        actT = v == "song" ? Sound.songLength : v == "bottle" ? 4.5 : 3.4
+        props3(); props?.isHidden = false; bowl.isHidden = true; ball?.isHidden = true; hearts.forEach { $0.isHidden = true }
+        bottle?.isHidden = v != "bottle"
+        if v == "song" { songT0 = CACurrentMediaTime(); Sound.shared.song() }
     }
 
     func buildKid() {
@@ -308,7 +359,8 @@ final class Life3D: NSObject {
         guard act != nil else { return }
         if towel { setTowel(false) }
         Sound.shared.loop("water", false)
-        let keep = act == "petcare" || act == "bend" || act == "wash" ? me.ry : 0
+        let keep = act == "petcare" || act == "bend" || act == "wash" || act == "baby" ? me.ry : 0
+        if act == "baby" { Sound.shared.stopSong(); bottle?.isHidden = true; hearts.forEach { $0.isHidden = true }; bubble?.isHidden = true; babyKind = "" }
         built.foam?.isHidden = true
         act = nil; pa = nil; props?.isHidden = true
         me.rot(0, keep, 0)
@@ -691,6 +743,26 @@ final class Life3D: NSObject {
             me.pos(h.x, h.y, h.z)
             Figure3D.all(R, -b * 0.55, b * 1.05, 0, -b * 1.1, -0.5); R.tr.rot(b * 0.85, 0, 0); R.bd.pos(0, -b * 0.13, 0)
             if actT <= 0 { endAct() }
+        } else if a == "baby" {
+            actT -= dt
+            me.pos(h.x, h.y, h.z)
+            let slow = babyKind == "song" ? 900.0 : babyKind == "cuddle" ? 420 : 700
+            let sway = sin(now / slow)
+            Figure3D.all(R, 0, 0.05, 0, 0, -0.2)
+            cradle(R)
+            R.tr.rot(babyKind == "cuddle" ? 0.12 : 0.05, sway * 0.12, sway * 0.07); R.bd.pos(0, abs(sway) * -0.01, 0)
+            if babyKind == "bottle" { R.arm[1].rot(-1.15, 0, -0.55); R.elbow[1].rx = -1.2 }
+            if babyKind != "bottle", let b = baby {
+                let wp = b.convertPosition(v3(-0.05, 0.25, 0.23), to: nil)
+                for (i, m) in hearts.enumerated() {
+                    let u = (Double(i) * 0.25 + (now / 1000) * 0.45).truncatingRemainder(dividingBy: 1)
+                    m.isHidden = false
+                    m.position = SCNVector3(wp.x + Float(sin(Double(i) * 2.1 + now / 400) * 0.12), wp.y + Float(u * 0.6), wp.z)
+                    let sc = (babyKind == "song" ? 0.9 : 1.2) - u * 0.7; m.scale = v3(sc, sc, sc)
+                    m.eulerAngles.y = Float(atan2(Double(camNode.position.x - wp.x), Double(camNode.position.z - wp.z)))
+                }
+            }
+            if actT <= 0 { let d = actDone; actDone = nil; endAct(quiet: true); d?() }
         } else if a == "shower" {
             actT -= dt
             me.pos(11.75, 3.06, 0.7); me.rot(0, now / 800, 0)
@@ -748,10 +820,19 @@ final class Life3D: NSObject {
         if h.y > 2.95 && !up { up = true; onStairs?() } else if h.y < 0.05 { up = false }
         amp += (min(1, moved / dt / SPD) - amp) * min(1, dt * 9); ph += moved * 4.3
         let sp = Int(floor(ph / Double.pi)); if sp != lastStep { lastStep = sp; if amp > 0.3 { Sound.shared.sfx("step") } }
-        if let R = rig { Figure3D.pose(R, amp, ph, climb, now) }
+        if let R = rig { Figure3D.pose(R, amp, ph, climb, now); if carry && act == nil { cradle(R) } }
         if act != nil { actPose(dt, now); if !running { return } } else { me.pos(h.x, h.y, h.z) }
         petStep(dt, now); kidStep(dt, now)
         if !fr.isHidden && frig != nil && hb != nil { hostStep(dt, now) } else { bubble?.isHidden = true }
+        if act == "baby" && babyKind == "song", let lab = bubble, let v = view {
+            let line = Sound.songLines[Sound.songLine(CACurrentMediaTime() - songT0 - 0.15)]
+            let f = st.feat.h
+            let p = v.projectPoint(v3(Double(me.position.x), Double(me.position.y) + 2.05 * f, Double(me.position.z)))
+            if lab.text != "♪ " + line { lab.text = "♪ " + line; lab.sizeToFit(); lab.bounds.size.width = min(lab.bounds.width + 20, v.bounds.width - 20); lab.bounds.size.height += 12 }
+            let bw = lab.bounds.width / 2 + 6
+            lab.center = CGPoint(x: max(bw, min(v.bounds.width - bw, CGFloat(p.x))), y: max(lab.bounds.height, CGFloat(p.y) - lab.bounds.height / 2))
+            lab.isHidden = false
+        }
         // kamera
         let sz0 = view?.bounds.size ?? CGSize(width: 1, height: 1)
         let asp = Double(sz0.width / max(1, sz0.height))

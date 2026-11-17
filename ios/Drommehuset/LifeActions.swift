@@ -394,7 +394,23 @@ extension GameModel {
             }
         }
         if use3 && s.life.place == "hjem" && s.kid.age == 0 {
-            walkTo(9.55, 2.3, 3) { e.me.ry = Double.pi / 2; e.act = "bend"; e.actT = 1.6; done() }
+            let kn = s.kid.name
+            if v == "carry" {
+                if e.carry { return }
+                msg = nm + " går bort til sprinkelsenga."
+                walkTo(9.55, 2.3, 3) { [weak self] in e.me.ry = Double.pi / 2; e.setCarry(true); Sound.shared.sfx("giggle"); self?.msg = self!.nm + " bærer " + kn + ". Babyen blir med der du går." }
+                return
+            }
+            if v == "down" {
+                walkTo(9.55, 2.3, 3) { [weak self] in e.me.ry = Double.pi / 2; e.endAct(quiet: true); e.setCarry(false); self?.msg = kn + " ligger i sprinkelsenga igjen." }
+                return
+            }
+            let begin: () -> Void = { [weak self] in
+                guard let self else { return }
+                e.startBaby(v, done)
+                self.msg = v == "song" ? self.nm + " synger «Bæ, bæ, lille lam» for " + kn + "." : v == "bottle" ? self.nm + " gir " + kn + " flaska." : self.nm + " koser med " + kn + "."
+            }
+            if e.carry { begin() } else { walkTo(9.55, 2.3, 3) { e.me.ry = Double.pi / 2; begin() } }
             return
         }
         if use3 && s.kid.age > 0 { e.kjump = 1.1; e.act = "bend"; e.actT = 1.6 }

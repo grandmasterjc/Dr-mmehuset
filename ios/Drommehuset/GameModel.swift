@@ -50,6 +50,11 @@ final class GameModel: ObservableObject {
         Sound.shared.evening = s.house.time == "kveld"
         Life3D.hostLookFn = { Scenes2D.hostLook($0, $1) }
         setupLife()
+        if a.contains("-baby") {
+            if s.kid.age != 0 { var f = KidForm(); f.name = "Lillemor"; _ = s.welcomeKid(f) }
+            s.life.place = "hjem"; s.life.h3 = Pos(x: 9.0, z: 2.6, y: 3)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in self?.act("kid:song") }
+        }
         if s.life.place == "bakeri" || s.life.place == "dyrepark" { jobAct("job", s.life.place == "bakeri" ? "baker" : "zoo") }
         ticker = Timer.scheduledTimer(withTimeInterval: 6, repeats: true) { [weak self] _ in
             DispatchQueue.main.async {

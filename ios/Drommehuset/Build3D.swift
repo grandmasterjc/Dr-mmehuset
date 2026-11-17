@@ -43,7 +43,7 @@ enum Build3D {
     }
 
     /// Bygger hele huset inn i g. away = hos en venn (ingen egne dyr/barn-møbler).
-    static func build(_ g: SCNNode, H: House, away: Bool, me: Look, tv: Bool, rain: Bool, act: String?) -> Built3D {
+    static func build(_ g: SCNNode, H: House, away: Bool, me: Look, tv: Bool, rain: Bool, act: String?, babyCarried: Bool = false) -> Built3D {
         P3.clear(g)
         var out = Built3D()
         let I = H.inne, eve = H.time == "kveld"
@@ -215,9 +215,12 @@ enum Build3D {
             for x in stride(from: 9.85, to: 10.66, by: 0.1) { B(g, x - 0.012, x + 0.012, 3.38, 3.72, 1.95, 1.975, wood); B(g, x - 0.012, x + 0.012, 3.38, 3.72, 2.625, 2.65, wood) }
             for z in [1.95, 2.63] { B(g, 9.84, 10.66, 3.72, 3.75, z, z + 0.025, wood) }
             for x in [9.84, 10.64] { B(g, x, x + 0.02, 3.38, 3.75, 1.95, 2.65, wood) }
+            if !babyCarried {
             let top = !kdd.look.topColor.isEmpty ? kdd.look.topColor : (kdd.girl ? "#e9cfd0" : "#cfd9e3")
             let bb = Sp(g, 10.25, 3.46, 2.24, 1, top); bb.scale = v3(0.1, 0.07, 0.17)
-            Sp(g, 10.25, 3.5, 2.46, 0.068, me.skin); let hh = Sp(g, 10.25, 3.53, 2.44, 1, me.hairColor); hh.scale = v3(0.066, 0.045, 0.06); out.obs.append([10.25, 2.3, 0.62, 1])
+            Sp(g, 10.25, 3.5, 2.46, 0.068, kdd.look.skin.isEmpty ? me.skin : kdd.look.skin); let hh = Sp(g, 10.25, 3.53, 2.44, 1, kdd.look.hairColor.isEmpty ? me.hairColor : kdd.look.hairColor); hh.scale = v3(0.066, 0.045, 0.06)
+            }
+            out.obs.append([10.25, 2.3, 0.62, 1])
         }
         art(8, 3, So.art); win(9.95, 3, So.has("gardiner"))
 

@@ -241,7 +241,14 @@ struct KidRow: View {
         if kd.age < 0 {
             OptionRow(title: "Familie") { Chip(label: "Få et barn (fanen Barn)") { m.tab = "barn" } }
         } else if kd.age == 0 {
-            OptionRow(title: kd.name + ", baby") { FlowLayout { AB(a: "kid:bottle", t: "Gi flaske", ghost: true); AB(a: "kid:cuddle", t: "Kos", ghost: true); AB(a: "kid:song", t: "Syng en sang", ghost: true) } }
+            OptionRow(title: kd.name + ", baby") {
+                FlowLayout {
+                    if m.use3 && m.s.life.place == "hjem" {
+                        if m.life3.carry { AB(a: "kid:down", t: "Legg babyen i senga", ghost: true) } else { AB(a: "kid:carry", t: "Bær babyen") }
+                    }
+                    AB(a: "kid:bottle", t: "Gi flaske", ghost: true); AB(a: "kid:cuddle", t: "Kos", ghost: true); AB(a: "kid:song", t: "Syng en sang", ghost: true)
+                }
+            }
         } else {
             OptionRow(title: kd.name + (kd.age > 1 ? ", barn" : ", smårolling")) {
                 FlowLayout { AB(a: "kid:play", t: "Lek", ghost: true); AB(a: "kid:read", t: "Les en bok", ghost: true); AB(a: "kid:food", t: m.s.life.food != nil ? "Gi barnet " + m.s.life.food!.name.lowercased() : "Gi mat", ghost: true) }

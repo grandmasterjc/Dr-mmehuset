@@ -22,6 +22,8 @@ private struct Voice {
     var rng: UInt32 = 22222
     var filt = Biquad()
     var useFilter = false
+    var sustain = false    // jevn tone med vibrato (sangstemme)
+    var tag = 0            // 1 = sangen (kan stoppes)
 }
 
 private struct Biquad {
@@ -228,6 +230,65 @@ final class Sound {
         add(v)
     }
 
+    // MARK: vuggesang («Bæ, bæ, lille lam», folkevise)
+
+    /// (tekst, tone i halvtoner fra C, lengde i slag)
+    static let songSyl: [[(String, Int, Double)]] = [
+        [("Bæ,", 0, 1), ("bæ,", 0, 1), ("lil", 7, 0.5), ("le", 7, 0.5), ("lam,", 7, 1), ("har", 9, 0.5), ("du", 9, 0.5), ("no", 9, 0.5), ("e", 9, 0.5), ("ull?", 7, 2)],
+        [("Ja,", 5, 1), ("ja,", 5, 1), ("kjæ", 4, 0.5), ("re", 4, 0.5), ("barn,", 4, 1), ("jeg", 2, 0.5), ("har", 2, 0.5), ("krop", 2, 0.5), ("pen", 2, 0.5), ("full.", 0, 2)],
+        [("Søn", 7, 1), ("dags", 7, 0.5), ("klær", 7, 0.5), ("til", 5, 1), ("far", 5, 1), ("og", 4, 0.5), ("søn", 4, 0.5), ("dags", 4, 0.5), ("klær", 4, 0.5), ("til", 2, 1), ("mor,", 2, 1)],
+        [("og", 7, 0.5), ("to", 7, 0.5), ("par", 7, 1), ("strøm", 5, 1), ("per", 5, 1), ("til", 4, 0.5), ("den", 4, 0.5), ("lil", 2, 0.5), ("le", 2, 0.5), ("bror.", 0, 2)],
+    ]
+    static let songLines = ["Bæ, bæ, lille lam, har du noe ull?", "Ja, ja, kjære barn, jeg har kroppen full.", "Søndagsklær til far og søndagsklær til mor,", "og to par strømper til den lille bror."]
+    static let songBeat = 0.62
+    static var songLength: Double { songSyl.reduce(0) { $0 + $1.reduce(0) { $0 + $1.2 } } * songBeat + 0.6 }
+    /// Hvilken linje som synges etter t sekunder.
+    static func songLine(_ t: Double) -> Int {
+        var acc = 0.0
+        for (i, l) in songSyl.enumerated() { acc += l.reduce(0) { $0 + $1.2 } * songBeat; if t < acc { return i } }
+        return songSyl.count - 1
+    }
+
+    /// Spiller vuggesangen med en myk sangstemme og rolig akkompagnement.
+    func song() {
+        guard level > 0 else { return }
+        start()
+        stopSong()
+        let c5 = 523.25, t0 = now() + 0.15
+        var t = t0
+        let bass: [[Int]] = [[0, 0], [5, 0], [0, 5], [7, 0]]
+        for (li, line) in Sound.songSyl.enumerated() {
+            let lineStart = t
+            for (_, semi, beats) in line {
+                let f = c5 * pow(2, Double(semi) / 12), d = beats * Sound.songBeat
+                for (mul, vol, wave) in [(1.0, 0.085, 0), (2.0, 0.012, 2), (0.5, 0.02, 0)] {
+                    var v = Voice()
+                    v.bus = 0; v.wave = wave; v.f0 = f * mul; v.dur = d * 0.96; v.vol = vol; v.attack = 0.05; v.sustain = true; v.tag = 1
+                    v.start = Int64(t * sr); v.len = Int64((d + 0.05) * sr)
+                    add(v)
+                }
+                t += d
+            }
+            let half = (t - lineStart) / 2
+            for (k, b) in bass[li].enumerated() {
+                var v = Voice()
+                v.bus = 0; v.wave = 2; v.f0 = 130.81 * pow(2, Double(b) / 12); v.dur = half; v.vol = 0.05; v.attack = 0.02; v.tag = 1
+                v.start = Int64((lineStart + Double(k) * half) * sr); v.len = Int64((half + 0.05) * sr)
+                add(v)
+            }
+        }
+        lock.lock(); songUntil = t; lock.unlock()
+    }
+
+    func stopSong() {
+        lock.lock()
+        for i in 0..<maxVoices where voices[i].active && voices[i].tag == 1 { voices[i].active = false }
+        songUntil = 0
+        lock.unlock()
+    }
+
+    private var songUntil = 0.0
+
     // MARK: music (same chords and pentatonic melody as the web version)
 
     private static let CH: [[Double]] = [[261.63, 329.63, 392], [220, 261.63, 329.63], [174.61, 220, 261.63], [196, 246.94, 293.66]]
@@ -240,12 +301,12 @@ final class Sound {
         if nextBeat == 0 || nextBeat < t0 { nextBeat = t0 + 0.1 }
         while nextBeat < t0 + 0.4 {
             let t = nextBeat, b = step % 16, ch = Sound.CH[(step >> 4) % 4], eve = evening
-            if b % 4 == 0 {
+            if b % 4 == 0 && t >= songUntil {
                 for f in ch { note(f / 2, bt * 4, 2, 0.022, t) }
                 note(ch[0] / 4, bt * 1.8, 0, 0.05, t)
             }
-            if b % 4 == 2 { note(ch[0] / 4 * ((b == 6 || b == 14) ? 1.5 : 1), bt * 1.5, 0, 0.035, t) }
-            if Double.random(in: 0..<1) < (eve ? 0.35 : 0.55) {
+            if b % 4 == 2 && t >= songUntil { note(ch[0] / 4 * ((b == 6 || b == 14) ? 1.5 : 1), bt * 1.5, 0, 0.035, t) }
+            if t >= songUntil, Double.random(in: 0..<1) < (eve ? 0.35 : 0.55) {
                 let f = Sound.PENT[Int.random(in: 0..<Sound.PENT.count)] * (eve ? 0.5 : 1)
                 note(f, bt * 1.2, 0, 0.028, t + (Double.random(in: 0..<1) < 0.3 ? bt / 2 : 0))
             }
@@ -281,7 +342,9 @@ final class Sound {
                 let tau = Double(age) * inv
                 let d = v.pointee.dur, a = v.pointee.attack, vol = v.pointee.vol
                 var g: Double
-                if a > 0 && tau < a { g = vol * tau / a }
+                if v.pointee.sustain {
+                    g = vol * min(1, tau / max(0.001, a)) * (tau > d - 0.09 ? max(0, (d - tau) / 0.09) : 1)
+                } else if a > 0 && tau < a { g = vol * tau / a }
                 else if tau < d { g = vol * pow(0.0001 / vol, (tau - a) / max(0.001, d - a)) }
                 else { g = 0.0001 }
                 var s: Double
@@ -293,6 +356,7 @@ final class Sound {
                 } else {
                     var f = v.pointee.f0
                     if v.pointee.f1 > 0 { f = f * pow(v.pointee.f1 / f, min(1, tau / d)) }
+                    if v.pointee.sustain { f *= 1 + 0.007 * sin(2 * Double.pi * 5.3 * tau) * min(1, tau / 0.25) }
                     let dt = f * inv
                     var p = v.pointee.phase + dt
                     if p >= 1 { p -= 1 }

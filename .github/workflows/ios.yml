@@ -46,6 +46,7 @@ jobs:
           shoot "$P" iphone-liv-ute -tab liv -sted ute
           shoot "$P" iphone-liv-bil -tab liv -sted bil
           shoot "$P" iphone-liv-flyplass -tab liv -sted flyplass
+          WAIT=12 shoot "$P" iphone-baby-sang -tab liv -baby
           shoot "$P" iphone-jobb-bakeri -tab liv -sted bakeri
           shoot "$P" iphone-jobb-dyrepark -tab liv -sted dyrepark
           I=$(pick "iPad"); xcrun simctl boot "$I"; to 400 xcrun simctl bootstatus "$I" -b || true
