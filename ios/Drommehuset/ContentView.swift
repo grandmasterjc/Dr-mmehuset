@@ -10,7 +10,7 @@ struct DrommehusetApp: App {
     }
 }
 
-let tabs = opts([("sminke", "Sminke"), ("haar", "Hår"), ("klaer", "Klær"), ("hus", "Hus"), ("barn", "Barn"), ("liv", "Liv"), ("pakke", "Pakke")])
+let tabs = opts([("sminke", "Sminke"), ("haar", "Hår"), ("klaer", "Klær"), ("hus", "Hus"), ("barn", "Barn"), ("liv", "Liv"), ("jobb", "Jobb"), ("pakke", "Pakke")])
 
 struct ContentView: View {
     @EnvironmentObject var m: GameModel
@@ -88,6 +88,10 @@ struct Stage: View {
             RadialGradient(colors: [Color(hex: "#f5f2f0"), Color(hex: "#ddd7d5"), Color(hex: "#c4bdbb")], center: UnitPoint(x: 0.5, y: 0.28), startRadius: 0, endRadius: 520)
             if m.tab == "liv" {
                 LivStage()
+            } else if m.tab == "jobb" {
+                let w = WorkLogic.scene(m.s, m.work)
+                Color(hex: w.1)
+                SVGView(svg: w.0, viewBox: CGRect(x: 0, y: 0, width: 640, height: 400))
             } else if let ks = kidSVG {
                 SVGView(svg: ks, viewBox: CGRect(x: 0, y: 0, width: 560, height: 610)).padding(.top, 12)
             } else if let sc = scene {
@@ -99,7 +103,7 @@ struct Stage: View {
                 SVGView(svg: "<g transform=\"translate(150 598) scale(\(js(f.h))) translate(-150 -598)\">\(fig)</g>")
                     .padding(.top, 12)
             }
-            if scene == nil && kidSVG == nil && m.tab != "liv" { VStack {
+            if scene == nil && kidSVG == nil && m.tab != "liv" && m.tab != "jobb" { VStack {
                 HStack {
                     if s.oops != nil {
                         StageButton(label: "Fiks det", dark: true) { m.set(\.oops, nil) }
@@ -182,6 +186,7 @@ struct PanelArea: View {
                     case "pakke": PakkePanel()
                     case "hus": HusPanel()
                     case "barn": BarnPanel()
+                    case "jobb": JobbPanel()
                     default: LivPanel()
                     }
                 }

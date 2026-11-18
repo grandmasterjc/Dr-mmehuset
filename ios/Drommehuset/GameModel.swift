@@ -29,6 +29,9 @@ final class GameModel: ObservableObject {
     let loop2D = Loop2D()
     @Published var ward = false
     @Published var job: Job? = nil
+    @Published var work: Work? = nil
+    @Published var workQuery = ""
+    @Published var workMsg = ""
     var tx: Double? = nil
     var pending: (() -> Void)? = nil
     var ticker: Timer? = nil
