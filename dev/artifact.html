@@ -876,32 +876,84 @@ function crowd(n,fy,k,seed,x0,x1){
   return o;
 }
 
-const STROLL=[['ender',150,'Andedammen'],['lek',345,'Lekeplassen'],['is',540,'Iskiosken']];
+const PW=3200;
+const PARK=[['dam',200,'Andedammen'],['benk1',500,'Benken ved dammen'],['lek',780,'Lekeplassen'],['bakeri',1080,'Bakeriet'],['kafe',1360,'Kafeen'],['leke',1640,'Leketøysbutikken'],['godteri',1920,'Godteributikken'],['blomst',2200,'Blomsterbutikken'],['fontene',2500,'Fontenen'],['benk2',2640,'Benken ved fontenen'],['is',2900,'Iskiosken']];
+const SHOPS={bakeri:{name:'Bakeriet',c:'#c9a271',wall:'#f3e6d6',e:['🥐','🍞','🧁','🥨'],items:[['Kanelbolle','🥐',4,'sult',15],['Skolebolle','🍩',5,'sult',18],['Brød','🍞',6,'sult',20]]},
+  kafe:{name:'Kafeen',c:'#7a5a3e',wall:'#efe4d6',e:['☕','🧇','🥤','🍰'],items:[['Kakao','☕',4,'humor',8],['Vaffel','🧇',5,'sult',15],['Smoothie','🥤',6,'energi',12]],sit:1},
+  leke:{name:'Leketøysbutikken',c:'#34507a',wall:'#e4ecf6',e:['🧸','🪀','🚂','🪁'],items:[['Bamse','🧸',15,'kid',25],['Ball','⚽',8,'kid',15],['Eventyrbok','📖',10,'humor',10]]},
+  godteri:{name:'Godteributikken',c:'#c97b84',wall:'#f8e6ec',e:['🍬','🍭','🍫','🍪'],items:[['Godteripose','🍬',5,'humor',10],['Kjærlighet på pinne','🍭',3,'humor',6],['Sjokolade','🍫',4,'sult',10]]},
+  blomst:{name:'Blomsterbutikken',c:'#5d7a5e',wall:'#e6f0e2',e:['🌷','🌻','🌹','🪴'],items:[['Bukett','💐',8,'humor',12],['Solsikke','🌻',4,'humor',6],['Potteplante til huset','🪴',12,'plante',0]]}};
+let parkSit=null;
+const pcl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const parkCam=x=>pcl(x,320,PW-320);
 function pram(kd,L){const c=(kd.look&&kd.look.topColor)||(kd.girl?'#e9cfd0':'#cfd9e3');
   return `<g><path d="M214 318L246 330L262 420" stroke="#2b2d31" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="198" y="312" width="26" height="10" rx="5" fill="#2b2d31"/>`
    +`<path d="M246 420L426 420Q434 500 380 518L292 518Q246 506 246 420Z" fill="${shade(c,-.25)}"/><path d="M250 420Q300 330 400 360L420 420Z" fill="${shade(c,-.45)}"/>`
    +`<circle cx="372" cy="414" r="30" fill="${L.skin}"/><path d="M344 404Q350 380 374 384Q396 386 400 406Q384 394 364 398Z" fill="${L.hairColor}"/><circle cx="364" cy="414" r="2.6" fill="#1d1020"/><circle cx="382" cy="414" r="2.6" fill="#1d1020"/><path d="M366 426Q373 430 380 426" stroke="#b5616a" stroke-width="2" fill="none" stroke-linecap="round"/>`
    +`<path d="M262 430L406 430L404 452L264 452Z" fill="${c}"/>`
    +`<path d="M290 518L300 560M390 518L380 560" stroke="#2b2d31" stroke-width="6"/><circle cx="300" cy="572" r="22" fill="#1d1f23"/><circle cx="300" cy="572" r="9" fill="#9ba1a8"/><circle cx="384" cy="572" r="22" fill="#1d1f23"/><circle cx="384" cy="572" r="9" fill="#9ba1a8"/></g>`}
-function strollSVG(){
-  const l=Lf(),p=P(),kd=p.kid;let o=sc0(['#8fc1ea','#e6f1f8'],'Trilletur')+'<g fill="#fff" opacity=".85"><ellipse cx="110" cy="70" rx="60" ry="14"/><ellipse cx="130" cy="58" rx="34" ry="16"/><ellipse cx="480" cy="96" rx="60" ry="12"/></g>';
-  o+='<path d="M-640 290Q-200 230 120 270T640 250T1280 290L1280 400L-640 400Z" fill="#6f9f5c"/>'+gr('#7fae63',300)+'<path d="M-640 352Q0 336 320 348T1280 350L1280 384Q640 376 320 380T-640 386Z" fill="#d9cdb4"/>';
-  [[30,1],[250,.8],[470,1.1],[620,.9]].forEach(t=>{const x=t[0],k=t[1];o+=`<rect x="${x-5}" y="${300-90*k}" width="10" height="${90*k}" fill="#6b4a35"/><circle cx="${x}" cy="${300-100*k}" r="${34*k}" fill="#4f8f52"/><circle cx="${x+20*k}" cy="${300-84*k}" r="${24*k}" fill="#458248"/>`});
-  o+='<ellipse cx="150" cy="322" rx="92" ry="22" fill="#6fb6d6"/><ellipse cx="150" cy="318" rx="80" ry="15" fill="#8fcbe2"/>';
-  [[118,316],[168,320],[196,312]].forEach((d,i)=>{o+=`<g transform="translate(${d[0]} ${d[1]})"><ellipse cx="0" cy="0" rx="11" ry="6" fill="${i===1?'#7a5a3e':'#f4f1ea'}"/><circle cx="9" cy="-7" r="5" fill="${i===1?'#3f6b52':'#f4f1ea'}"/><path d="M13 -7l6 1l-6 2z" fill="#e9813c"/></g>`});
-  o+='<path d="M300 336L300 250L390 250L390 336" stroke="#c4313f" stroke-width="7" fill="none"/><path d="M300 250L345 228L390 250" stroke="#c4313f" stroke-width="7" fill="none"/><path d="M332 252L332 300M358 252L358 300" stroke="#55595f" stroke-width="2"/><rect x="324" y="300" width="42" height="7" rx="2" fill="#c9a227"/><path d="M398 336L430 290L462 336Z" fill="#7fa3c7"/><rect x="406" y="318" width="48" height="6" fill="#5f87ad"/>';
-  o+='<rect x="500" y="250" width="86" height="86" rx="6" fill="#fbfaf7" stroke="#c97b84" stroke-width="3"/><path d="M492 252L543 222L594 252Z" fill="#c97b84"/><text x="543" y="282" text-anchor="middle" font-family="Jost,sans-serif" font-size="13" font-weight="600" fill="#9b3b47">IS</text><path d="M532 296L543 326L554 296Z" fill="#dba54e"/><circle cx="543" cy="292" r="10" fill="#f2b5c4"/>';
-  o+='<text x="320" y="40" text-anchor="middle" font-family="Jost,sans-serif" font-size="15" font-weight="600" letter-spacing="3" fill="#34507a">PARKEN</text>';
-  const sc=.3*Ft().h,fy=382;let inner=girl();
+function parkWalker(sx,sit){
+  const p=P(),kd=p.kid,sc=.3*Ft().h,fy=382;let inner='';
+  if(sit){inner+=`<g transform="translate(0 150)">${girl()}</g>`;
+    inner+=sit==='bord'?'<rect x="-20" y="420" width="340" height="24" rx="4" fill="#8a6a4a"/><rect x="0" y="444" width="300" height="200" fill="#a07c56"/><rect x="40" y="380" width="60" height="44" rx="6" fill="#fbfaf7"/><path d="M100 392q14 0 14 12q0 12 -14 12" stroke="#fbfaf7" stroke-width="6" fill="none"/>'
+      :'<rect x="-30" y="380" width="360" height="26" rx="5" fill="#8a6a4a"/><rect x="-30" y="420" width="360" height="26" rx="5" fill="#7a5a3e"/><rect x="-20" y="446" width="22" height="160" fill="#55595f"/><rect x="298" y="446" width="22" height="160" fill="#55595f"/>'}
+  else inner+=girl();
   if(kd.age===0)inner+=pram(kd,kidLook());
-  else if(kd.age>0){dl=kidLook();const kg=girl(),ks=kidLook().feat.h/Ft().h;dl=null;inner+=`<g transform="translate(${(210).toFixed(0)} ${(598-598*ks).toFixed(1)}) scale(${ks.toFixed(3)})">${kg}</g>`}
-  o+=`<g id="walker" data-sc="${sc}" data-fy="${fy}" transform="${wt(l.x,sc,fy,0)}">${inner}</g>`;
+  else if(kd.age>0){dl=kidLook();const kg=girl(),ks=kidLook().feat.h/Ft().h;dl=null;inner+=`<g transform="translate(${sit?250:210} ${(598-598*ks).toFixed(1)}) scale(${ks.toFixed(3)})">${kg}</g>`}
+  return `<g id="walker" data-sc="${sc}" data-fy="${fy}" data-park="1" transform="${wt(sx,sc,fy,0)}">${inner}</g>`}
+function facade(id,x){const S=SHOPS[id],c=S.c,w=210,x0=x-w/2;
+  return `<rect x="${x0}" y="150" width="${w}" height="150" fill="${S.wall}" stroke="${shade(c,-.2)}" stroke-width="2"/><rect x="${x0-8}" y="138" width="${w+16}" height="16" fill="${c}"/>`
+   +`<rect x="${x0+20}" y="160" width="${w-40}" height="28" rx="5" fill="${c}"/><text x="${x}" y="179" text-anchor="middle" font-family="Jost,sans-serif" font-size="13" font-weight="600" letter-spacing="1.5" fill="#fbfaf7">${S.name.toUpperCase()}</text>`
+   +`<rect x="${x0+14}" y="200" width="62" height="62" fill="#cfe3ec" stroke="${shade(c,-.2)}" stroke-width="3"/><rect x="${x0+w-76}" y="200" width="62" height="62" fill="#cfe3ec" stroke="${shade(c,-.2)}" stroke-width="3"/>`
+   +`<text x="${x0+45}" y="243" text-anchor="middle" font-size="30">${S.e[0]}</text><text x="${x0+w-45}" y="243" text-anchor="middle" font-size="30">${S.e[1]}</text>`
+   +`<rect x="${x-22}" y="222" width="44" height="78" fill="${shade(c,-.25)}"/><circle cx="${x+13}" cy="262" r="3" fill="#d4a843"/><path d="M${x0-8} 154L${x0+w+8} 154L${x0+w-4} 170L${x0+4} 170Z" fill="${shade(c,.2)}" opacity=".7"/>`}
+function bench(x){return `<rect x="${x-50}" y="318" width="100" height="8" rx="3" fill="#8a6a4a"/><rect x="${x-50}" y="330" width="100" height="8" rx="3" fill="#7a5a3e"/><rect x="${x-46}" y="338" width="6" height="22" fill="#55595f"/><rect x="${x+40}" y="338" width="6" height="22" fill="#55595f"/>`}
+function parkSVG(){
+  const l=Lf(),cam=parkCam(l.x);let w='';
+  w+='<path d="M-400 290Q0 230 400 270T1200 250T2000 280T2800 250T3600 290L3600 400L-400 400Z" fill="#6f9f5c"/>'+`<rect x="-400" y="300" width="${PW+800}" height="100" fill="#7fae63"/>`+`<rect x="-400" y="344" width="${PW+800}" height="44" fill="#d9cdb4"/><rect x="-400" y="344" width="${PW+800}" height="3" fill="#c9bb9e"/>`;
+  for(let x=-200;x<PW+300;x+=170){const k=.75+((x*37)%50)/100;if(PARK.some(q=>SHOPS[q[0]]&&Math.abs(q[1]-x)<150))continue;w+=`<rect x="${x-5}" y="${300-90*k}" width="10" height="${90*k}" fill="#6b4a35"/><circle cx="${x}" cy="${300-100*k}" r="${34*k}" fill="#4f8f52"/><circle cx="${x+20*k}" cy="${300-84*k}" r="${24*k}" fill="#458248"/>`}
+  w+='<ellipse cx="200" cy="322" rx="110" ry="22" fill="#6fb6d6"/><ellipse cx="200" cy="318" rx="96" ry="15" fill="#8fcbe2"/>';
+  [[160,316],[214,321],[250,312]].forEach((d,i)=>{w+=`<g transform="translate(${d[0]} ${d[1]})"><ellipse cx="0" cy="0" rx="11" ry="6" fill="${i===1?'#7a5a3e':'#f4f1ea'}"/><circle cx="9" cy="-7" r="5" fill="${i===1?'#3f6b52':'#f4f1ea'}"/><path d="M13 -7l6 1l-6 2z" fill="#e9813c"/></g>`});
+  w+='<path d="M735 336L735 250L825 250L825 336" stroke="#c4313f" stroke-width="7" fill="none"/><path d="M735 250L780 228L825 250" stroke="#c4313f" stroke-width="7" fill="none"/><path d="M767 252L767 300M793 252L793 300" stroke="#55595f" stroke-width="2"/><rect x="759" y="300" width="42" height="7" rx="2" fill="#c9a227"/><path d="M838 336L870 290L902 336Z" fill="#7fa3c7"/><rect x="846" y="318" width="48" height="6" fill="#5f87ad"/>';
+  Object.keys(SHOPS).forEach(id=>{w+=facade(id,PARK.find(q=>q[0]===id)[1])});
+  w+='<ellipse cx="2500" cy="330" rx="70" ry="16" fill="#9aa0a8"/><ellipse cx="2500" cy="326" rx="60" ry="11" fill="#8fcbe2"/><rect x="2494" y="270" width="12" height="56" fill="#9aa0a8"/><ellipse cx="2500" cy="270" rx="26" ry="7" fill="#9aa0a8"/><path d="M2500 262Q2480 240 2470 264M2500 262Q2520 240 2530 264M2500 262L2500 236" stroke="#bfe6f7" stroke-width="4" fill="none" stroke-linecap="round"/>';
+  ['benk1','benk2'].forEach(b=>{if(parkSit!==b)w+=bench(PARK.find(q=>q[0]===b)[1])});
+  w+='<rect x="2858" y="250" width="86" height="86" rx="6" fill="#fbfaf7" stroke="#c97b84" stroke-width="3"/><path d="M2850 252L2901 222L2952 252Z" fill="#c97b84"/><text x="2901" y="282" text-anchor="middle" font-family="Jost,sans-serif" font-size="13" font-weight="600" fill="#9b3b47">IS</text><text x="2901" y="322" text-anchor="middle" font-size="30">🍦</text>';
+  PARK.forEach(q=>{w+=`<rect x="${q[1]-2}" y="388" width="4" height="12" fill="#b9ad9d"/>`});
+  w+=crowd(9,378,.29,11,40,PW-60);
+  let o=sc0(['#8fc1ea','#e6f1f8'],'Parken')+'<g fill="#fff" opacity=".85"><ellipse cx="110" cy="70" rx="60" ry="14"/><ellipse cx="130" cy="58" rx="34" ry="16"/><ellipse cx="480" cy="96" rx="60" ry="12"/></g>';
+  o+=`<g id="world" transform="translate(${(320-cam).toFixed(1)} 0)">${w}</g>`;
+  o+=parkWalker(l.x-cam+320,parkSit?'benk':null);
   return [o+'</svg>','#8fc1ea']}
-function strollAct(id){const p=P(),kd=p.kid,n=esc(kd.name),sp=STROLL.find(q=>q[0]===id);if(!sp)return;
-  doAt(sp[1],()=>{if(id==='ender'){need('humor',8);kd.glad=Math.min(100,kd.glad+10);sfx('squeak');msg=(kd.age===0?n+' ser på endene og smiler.':n+' kaster brødsmuler til endene.')}
-    else if(id==='lek'){need('humor',10);kd.glad=Math.min(100,kd.glad+15);sfx('giggle');msg=kd.age===0?n+' ser på de store barna som leker og ler.':n+' husker og sklir og ler høyt.'}
-    else{if(Gm().coins<5){msg='En is koster 5 mynter.';return render()}Gm().coins-=5;need('sult',10);need('humor',6);kd.glad=Math.min(100,kd.glad+8);sfx('pop');msg='Dere kjøper is. '+(kd.age===0?n+' får smake litt på kjeksen.':n+' får jordbæris.')}
-    if(!Lf().strolled){Lf().strolled=1;fire('kid')}render()})}
+function shopSVG(){
+  const l=Lf(),S=SHOPS[l.shop2]||SHOPS.bakeri;let o=sc0([S.wall,S.wall],S.name)+gr(shade(S.c,.35),300)+'<rect x="-640" y="292" width="1920" height="8" fill="#f6f4ef"/>';
+  o+=`<rect x="190" y="30" width="260" height="36" rx="6" fill="${S.c}"/><text x="320" y="54" text-anchor="middle" font-family="Jost,sans-serif" font-size="15" font-weight="600" letter-spacing="2" fill="#fbfaf7">${S.name.toUpperCase()}</text>`;
+  o+=`<rect x="380" y="90" width="240" height="170" fill="${shade(S.c,-.15)}"/>`;for(let r=0;r<3;r++){o+=`<rect x="386" y="${96+r*55}" width="228" height="48" fill="${shade(S.c,-.35)}"/>`;for(let i=0;i<5;i++)o+=`<text x="${410+i*45}" y="${131+r*55}" text-anchor="middle" font-size="26">${S.e[(i+r)%S.e.length]}</text>`}
+  if(S.sit){[[120,'bord1'],[260,'bord2']].forEach(t=>{if(parkSit!==t[1])o+=`<rect x="${t[0]-40}" y="300" width="80" height="8" rx="3" fill="#8a6a4a"/><rect x="${t[0]-4}" y="308" width="8" height="52" fill="#6b4f36"/><rect x="${t[0]-26}" y="358" width="52" height="5" rx="2" fill="#6b4f36"/><text x="${t[0]-12}" y="298" font-size="18">☕</text>`})}
+  const cl=CROWD[(l.shop2||'').length%CROWD.length];if(!CSV[(l.shop2||'').length%CROWD.length]){dl=cl;CSV[(l.shop2||'').length%CROWD.length]=girl();dl=null}
+  o+=`<g transform="${wt(500,.3*cl.feat.h,370,0)}">${CSV[(l.shop2||'').length%CROWD.length]}</g>`;
+  o+=`<rect x="400" y="270" width="220" height="100" fill="${shade(S.c,.1)}"/><rect x="396" y="264" width="228" height="10" fill="#fbfaf7"/><text x="450" y="330" text-anchor="middle" font-size="28">${S.e[2]}</text><text x="560" y="330" text-anchor="middle" font-size="28">${S.e[3]}</text>`;
+  o+=crowd(2,378,.3,l.shop2==='kafe'?5:9,40,360);
+  const sx=parkSit?(parkSit==='bord1'?120:260):l.x;
+  o+=parkWalker(sx,parkSit?'bord':null);
+  return [o+'</svg>',S.wall]}
+function parkAct(id){const p=P(),kd=p.kid,n=esc(kd.name||''),sp=PARK.find(q=>q[0]===id);if(!sp)return;
+  parkSit=null;
+  doAt(sp[1],()=>{
+    if(SHOPS[id]){const l=Lf();l.place='butikk';l.shop2=id;l.px=sp[1];l.x=90;sfx('door');msg='Du går inn i '+SHOPS[id].name.toLowerCase()+'.';return render()}
+    if(id==='dam'){need('humor',8);if(kd.age>=0)kd.glad=Math.min(100,kd.glad+10);sfx('squeak');msg=kd.age===0?n+' ser på endene og smiler.':kd.age>0?n+' kaster brødsmuler til endene.':'Endene kommer svømmende bort til deg.'}
+    else if(id==='lek'){need('humor',10);if(kd.age>=0)kd.glad=Math.min(100,kd.glad+15);sfx('giggle');msg=kd.age===0?n+' ser på de store barna som leker og ler.':kd.age>0?n+' husker og sklir og ler høyt.':'Du tar en tur på husken. Så gøy!'}
+    else if(id==='fontene'){if(Gm().coins<1){msg='Du har ingen mynter å kaste.';return render()}Gm().coins-=1;need('humor',6);sfx('splash');msg='Du kaster en mynt i fontenen og ønsker deg noe.'}
+    else if(id==='is'){if(Gm().coins<5){msg='En is koster 5 mynter.';return render()}Gm().coins-=5;need('sult',10);need('humor',6);if(kd.age>=0)kd.glad=Math.min(100,kd.glad+8);sfx('pop');msg='Du kjøper is.'+(kd.age===0?' '+n+' får smake litt på kjeksen.':kd.age>0?' '+n+' får jordbæris.':'')}
+    else if(id==='benk1'||id==='benk2'){parkSit=id;need('energi',5);need('humor',3);msg=(p.name||'Hun')+' setter seg på benken og ser på folk som går forbi.'}
+    if(kd.age>=0&&!Lf().strolled){Lf().strolled=1;fire('kid')}render()})}
+function shopBuy(i){const l=Lf(),S=SHOPS[l.shop2],it=S&&S.items[i];if(!it)return;
+  if(Gm().coins<it[2]){msg=it[0]+' koster '+it[2]+' mynter. Du har '+Gm().coins+'.';return render()}
+  Gm().coins-=it[2];sfx('coin');const kd=P().kid;
+  if(it[3]==='kid'){if(kd.age>=0){kd.glad=Math.min(100,kd.glad+it[4]);msg=kd.name+' blir kjempeglad for '+it[0].toLowerCase()+'!'}else{need('humor',10);msg='Du kjøpte '+it[0].toLowerCase()+'.'}}
+  else if(it[3]==='plante'){state.house.inne.stue.items.plante=true;state.house.inne.soverom.items.plante=true;state.house.inne.bad.items.plante=true;msg='Du kjøpte en potteplante. Den står hjemme nå.'}
+  else{need(it[3],it[4]);msg='Du kjøpte '+it[0].toLowerCase()+'. Mmm!'}
+  render()}
 function lifeScene(){
   const l=Lf();
   if(flying)return flyView==='out'?flightSVG():cabinSVG();
@@ -911,7 +963,8 @@ function lifeScene(){
     return roomParts('stue',FR[l.friend],`<g transform="${wt(200,k,366,0)}">${fg}</g><rect x="${bx}" y="${96}" width="${w}" height="30" rx="10" fill="#fff" stroke="#0003"/><path d="M196 125l4 12l10-12z" fill="#fff"/><text x="${bx+13}" y="116" font-family="Jost,sans-serif" font-size="13" fill="#1d1b22">${esc(t)}</text>`+myB+walkerG(l.x,.36,372))}
   if(l.place==='flyplass')return airportSVG(crowd(4,372,.3,3,-120,760)+crewFigs([300,350,60,110,400,455],.34,378)+walkerG(l.x,.34,378));
   if(l.place==='dyr')return petShopSVG(walkerG(l.x,.34,378));
-  if(l.place==='trille')return strollSVG();
+  if(l.place==='trille')return parkSVG();
+  if(l.place==='butikk')return shopSVG();
   if(l.place==='bil')return driveSVG();
   if(l.place==='reise')return destSVG(l.dest,crowd(l.dest==='preikestolen'?2:4,370,.3,7+l.dest.length,-140,l.dest==='preikestolen'?400:780)+crewFigs(l.dest==='preikestolen'?[60,115,230,285,290,345]:[430,485,540,595,370,320],.34,376)+walkerG(l.x,.34,376));
   return roomParts(l.room,state.house.inne[l.room],walkerG(l.x,.36,372),true);
@@ -1531,6 +1584,7 @@ function letterHTML(){const L=Lf().letter,nm=esc(P().name)||'deg';
   return `<div class="letter"><span class="eye">${esc(L.t)}</span><p>Kjære ${nm},</p>${L.body.map(q=>`<p>${esc(q)}</p>`).join('')}<p class="sig">${esc(L.sign)}</p></div>${L.note?`<p class="hint">${esc(L.note)}</p>`:''}<div class="acts">${ab('letterdone','Legg bort brevet')}</div>`}
 const doorX=()=>({moderne:363,hytte:300})[state.house.type]||320;
 function place(){if(!walker)return;const l=Lf(),still=tx==null||matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(l.place==='trille'){const cam=parkCam(l.x),wd=document.getElementById('world');if(wd)wd.setAttribute('transform',`translate(${(320-cam).toFixed(1)} 0)`);walker.setAttribute('transform',wt(l.x-cam+320,+walker.dataset.sc,+walker.dataset.fy,still?0:Math.sin(performance.now()/85)*1.5));return}
   walker.setAttribute('transform',wt(l.x,+walker.dataset.sc,+walker.dataset.fy,still?0:Math.sin(performance.now()/85)*1.5))}
 function goRoom(i,fromRight){const l=Lf();l.room=ROOMS[i][0];l.x=fromRight?606:34;tx=fromRight?500:140;msg='';render()}
 function step(now){
@@ -1538,13 +1592,13 @@ function step(now){
   if(state.tab!=='liv'||tx==null||!walker||flying){raf=0;tx=null;return}
   const d=tx-l.x,sp=210*dt;
   if(Math.abs(d)<=sp){l.x=tx;tx=null}else l.x+=Math.sign(d)*sp;
-  const home=l.place==='hjem',i=ROOMS.findIndex(r=>r[0]===l.room),max=l.place==='reise'&&l.dest==='preikestolen'?400:616;
+  const home=l.place==='hjem',i=ROOMS.findIndex(r=>r[0]===l.room),max=l.place==='reise'&&l.dest==='preikestolen'?400:l.place==='trille'?PW-60:616;
   if(l.x<24){if(home&&i>0)goRoom(i-1,true);else if(home){l.place='ute';l.x=doorX();tx=null;msg='';render()}else{l.x=24;tx=null}}
   else if(l.x>max){if(home&&i<ROOMS.length-1)goRoom(i+1,false);else{l.x=max;tx=null}}
   place();
-  if(tx==null){raf=0;save();if(pending){const f=pending;pending=null;f()}}else raf=requestAnimationFrame(step);
+  if(tx==null){raf=0;save();if(pending){const f=pending;pending=null;f()}else if(l.place==='trille')render()}else raf=requestAnimationFrame(step);
 }
-function setTarget(x){tx=x;if(!raf){last=performance.now();raf=requestAnimationFrame(step)}}
+function setTarget(x){if(parkSit){parkSit=null;tx=x;render()}tx=x;if(!raf){last=performance.now();raf=requestAnimationFrame(step)}}
 function doAt(x,f){if(Math.abs(Lf().x-x)<4)return f();pending=f;setTarget(x)}
 let flyView='cabin',snack=false;
 const FAMDEF={mamma:{name:'Mamma',skin:SKIN[1],eyes:EYES[3],hair:'lob',hairColor:HAIR[2],lips:LIPS[0],mascara:true,top:'skjorte',topColor:CLOTH[0],outer:'blazer',outerColor:CLOTH[4],bottom:'vide',bottomColor:CLOTH[1],shoes:'haeler',shoeColor:CLOTH[1],feat:{face:'oval',er:0,es:.95,lip:1,bx:1.04,h:1}},
@@ -1606,9 +1660,13 @@ function act(a){
   if(k==='wnext'){const w=work;if(!w)return;if(w.i>=4){w.done=true;if(w.right===5){w.earned+=10;Gm().coins+=10}need('energi',-15);need('sult',-10);need('humor',10);sfx('level');fire('job');return render()}w.i++;w.ans=-1;return render()}
   if(k==='wagain'){const w=work,j=WJOBS.find(x=>x.id===w.id)||{name:w.name,e:w.e,bg:w.bg,t:[]};return wstart(j)}
   if(k==='wend'){work=null;return render()}
-  if(k==='stroll'){l.place='trille';l.x=60;l.strolled=0;sfx('door');msg=P().kid.age===0?nm+' legger '+P().kid.name+' i barnevogna.':nm+' og '+P().kid.name+' går en tur i parken.';return render()}
-  if(k==='strollgo')return strollAct(v);
-  if(k==='strollhome'){l.place='ute';l.x=doorX();msg='Dere er hjemme igjen etter turen.';return render()}
+  if(k==='stroll'){parkSit=null;l.place='trille';l.x=60;l.strolled=0;sfx('door');msg=P().kid.age===0?nm+' legger '+P().kid.name+' i barnevogna.':nm+' og '+P().kid.name+' går en tur i parken.';return render()}
+  if(k==='parkgo')return parkAct(v);
+  if(k==='parkstand'){parkSit=null;msg='';return render()}
+  if(k==='shopbuy')return shopBuy(+v);
+  if(k==='shopsit'){parkSit=v;need('energi',5);msg=nm+' setter seg ved bordet.';return render()}
+  if(k==='shopout'){parkSit=null;l.place='trille';l.x=l.px||1000;sfx('door');msg='';return render()}
+  if(k==='strollhome'){parkSit=null;l.place='ute';l.x=doorX();msg='Dere er hjemme igjen etter turen.';return render()}
   if(k==='letterdone'){l.letter=null;return render()}
   if(k==='petbed'){G3.petBed=!G3.petBed;msg=G3.petBed?p.pet.name+' går og legger seg i '+(p.pet.type==='hund'?'hundesenga':'senga si')+'.':p.pet.name+' kommer løpende.';if(!G3.petBed)G3.petJump=.8;sfx(p.pet.type==='hund'?'bark':p.pet.type==='katt'?'meow':'squeak');return render()}
   if(k==='kidbed'){if(G3.kbed){G3.kbed=false;msg=p.kid.name+' er våken og vil leke.';sfx('giggle');return render()}
@@ -1730,11 +1788,16 @@ function lifeBody(){
       +`<div class="row"><h2><label for="ltxt">Brevet</label></h2><textarea class="txt ltxt" id="ltxt" maxlength="400" placeholder="Kjære ${esc(w.to)||'…'}">${esc(w.text)}</textarea></div>`
       +row('Ferdige setninger',PHRASES.map((t,i)=>ab('wadd:'+i,t,1)).join(''))+`<div class="acts">${ab('wsend','Send brevet')}${ab('wcancel','Avbryt',1)}</div>`+m}
   if(l.place==='ute'&&l.letter&&l.letter.body)return letterHTML();
-  if(l.place==='trille'){const kd=P().kid,n=esc(kd.name),nr=STROLL.find(q=>Math.abs(q[1]-l.x)<70);
-    return head('Trilletur',nr?nr[2]:'I parken',(kd.age===0?n+' ligger i barnevogna.':n+' går ved siden av deg.')+' Trykk i bildet for å gå, eller velg et sted.')
-      +row('Gå til',ab('strollgo:ender','Mat endene ved dammen',1)+ab('strollgo:lek','Lekeplassen',1)+ab('strollgo:is','Kjøp is (5 mynter)',1))+`<div class="acts">${ab('strollhome','Gå hjem')}</div>`+food+m}
+  if(l.place==='trille'){const kd=P().kid,n=esc(kd.name||''),nr=PARK.filter(q=>Math.abs(q[1]-l.x)<90).sort((a,b)=>Math.abs(a[1]-l.x)-Math.abs(b[1]-l.x))[0];
+    const here=!nr?'':SHOPS[nr[0]]?ab('parkgo:'+nr[0],'Gå inn i '+SHOPS[nr[0]].name.toLowerCase()):nr[0]==='dam'?ab('parkgo:dam',kd.age>0?'Mat endene':'Se på endene'):nr[0]==='lek'?ab('parkgo:lek',kd.age>0?'Lek på lekeplassen':'Prøv husken'):nr[0]==='fontene'?ab('parkgo:fontene','Kast en mynt (1)'):nr[0]==='is'?ab('parkgo:is','Kjøp is (5 mynter)'):(parkSit===nr[0]?ab('parkstand','Reis deg'):ab('parkgo:'+nr[0],'Sett deg på benken'));
+    return head('Parken',nr?nr[2]:'På tur i parken',(kd.age===0?n+' ligger i barnevogna. ':kd.age>0?n+' går ved siden av deg. ':'')+'Gå med pilene eller trykk i bildet. Parken er stor, så gå langt bortover.')
+      +(here?row('Her',here):'')+row('Gå til',PARK.map(q=>ab('parkgo:'+q[0],q[2],1)).join(''))+`<div class="acts">${ab('strollhome','Gå hjem')}</div>`+food+m}
+  if(l.place==='butikk'){const S=SHOPS[l.shop2]||SHOPS.bakeri;
+    return head('Butikk',S.name,'Det er flere kunder her. Velg hva du vil kjøpe.')+row('Kjøp',S.items.map((it,i)=>ab('shopbuy:'+i,it[1]+' '+it[0]+' · '+it[2],1)).join(''))
+      +(S.sit?row('Sitte',parkSit?ab('parkstand','Reis deg'):ab('shopsit:bord1','Sett deg ved et bord',1)+ab('shopsit:bord2','Sett deg ved vinduet',1)):'')
+      +`<div class="acts">${ab('shopout','Gå ut')}</div>`+m}
   if(l.place==='ute')return head('Ute','Utenfor huset')+row('Hjem',ab('in','Gå inn'))
-    +row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join(''))+row('Naboer',NB.map((q,i)=>ab('friend:'+(NP+i),'Hils på '+q.name,1)).join(''))+row('Postkasse',(Gm().mail>0?ab('mail','Hent posten ('+Gm().mail+')'):'')+ab('write','Skriv et brev',1)+(Gm().mail>0?'':'<span class="hint">Ingen ny post akkurat nå.</span>'))+row('Bil',ab('drive','Kjør bil',1))+row('Reise',ab('airport','Dra til flyplassen',1))+row('Dyr',ab('petshop','Gå til dyrebutikken',1))+(P().kid.age>=0?row('Trilletur',ab('stroll',(P().kid.age===0?'Gå på trilletur med ':'Gå tur med ')+esc(P().kid.name),1)):'')+food+m;
+    +row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join(''))+row('Naboer',NB.map((q,i)=>ab('friend:'+(NP+i),'Hils på '+q.name,1)).join(''))+row('Postkasse',(Gm().mail>0?ab('mail','Hent posten ('+Gm().mail+')'):'')+ab('write','Skriv et brev',1)+(Gm().mail>0?'':'<span class="hint">Ingen ny post akkurat nå.</span>'))+row('Bil',ab('drive','Kjør bil',1))+row('Reise',ab('airport','Dra til flyplassen',1))+row('Dyr',ab('petshop','Gå til dyrebutikken',1))+row('Parken',ab('stroll',P().kid.age===0?'Gå på trilletur med '+esc(P().kid.name):P().kid.age>0?'Gå tur i parken med '+esc(P().kid.name):'Gå tur i parken',1))+food+m;
   if(l.place==='bil'){const nr=STOPS.find(q=>Math.abs(q[1]-l.cx)<120);
     return head('På veien',nr?nr[2]:'Kjør bil','Hold inne pilene i bildet, eller bruk piltastene.')
       +(!nr?'':nr[0]==='friends'?row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join('')):`<div class="acts">${ab(nr[0],nr[0]==='home'?'Parker hjemme':'Parker og gå inn')}</div>`)
@@ -2022,7 +2085,7 @@ document.addEventListener('keyup',e=>{const k=KM[e.key];if(k)G3.keys[k]=false});
 $('scene').addEventListener('click',e=>{
   if(state.tab!=='liv'||flying||cook)return;const svg=$('scene').querySelector('svg');if(!svg||!svg.getScreenCTM)return;
   const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;const q=pt.matrixTransform(svg.getScreenCTM().inverse());
-  pending=null;setTarget(Math.max(26,Math.min(614,q.x)))});
+  pending=null;if(parkSit){parkSit=null;render()}const L=Lf();if(L.place==='trille')return setTarget(pcl(L.x+q.x-(L.x-parkCam(L.x)+320),40,PW-60));setTarget(Math.max(26,Math.min(614,q.x)))});
 document.addEventListener('keydown',e=>{if(state.tab!=='liv'||flying||cook||/INPUT|TEXTAREA/.test(e.target.tagName))return;
   if(G3.run||Lf().place==='bil'){const k=KM[e.key];if(k){e.preventDefault();G3.keys[k]=true}return}
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();pending=null;setTarget(Lf().x+(e.key==='ArrowLeft'?-90:90))}});
