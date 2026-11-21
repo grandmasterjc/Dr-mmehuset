@@ -993,6 +993,40 @@ function stedSVG(){const l=Lf(),st=l.sted||{n:'Et sted',e:'📍'},n=wnorm(st.n),
   o+=`<g transform="translate(60 0)"><rect x="-40" y="318" width="120" height="34" rx="12" fill="${Lf().car}"/><path d="M-20 318L0 296L50 296L66 318Z" fill="${shade(Lf().car,.2)}"/><circle cx="-12" cy="354" r="11" fill="#1d1f23"/><circle cx="54" cy="354" r="11" fill="#1d1f23"/></g>`;
   o+=crowd(4,378,.3,7+st.n.length,-60,700)+walkerG(l.x,.34,378);
   return [o+'</svg>',beach?'#8fc1ea':'#8fc1ea']}
+
+// innendørs på steder du kjører til: [ord, type, vegg, gulv, ting, sitte (bord/benk), handling, kostnad, behov, mengde, tekst]
+const INT=[['skole|barnehage','skole','#eef0e2','#c9b38a',['📚','✏️','🌍','🧮'],'bord','Ha en skoletime',0,'humor',8,'Læreren forteller om planetene. Så spennende!'],
+ ['sykehus|lege|tannlege','sykehus','#eef4f6','#d9dde0',['🩺','💊','🩹','🧸'],'benk','Få sjekket deg hos legen',0,'hygiene',15,'Legen sier at du er frisk og fin.'],
+ ['kino|film','kino','#2b2140','#3a3448',['🎬','🍿','🎟️','🥤'],'benk','Se en film (5 mynter)',5,'humor',22,'Filmen var kjempegøy! Popkornet var godt også.'],
+ ['restaurant|pizza|kafe|kafé|hotell','restaurant','#f3ebdf','#a07c56',['🍽️','🍕','🥗','🍰'],'bord','Spis middag (10 mynter)',10,'sult',45,'Middagen smakte nydelig!'],
+ ['museum','museum','#f2efe8','#cfc7b8',['🖼️','🏺','🦖','🗿'],'benk','Se på utstillingen',0,'humor',10,'Du så et ekte dinosaurskjelett!'],
+ ['slott|borg','slott','#f3e6c8','#b9a06a',['👑','🏰','🛡️','🕯️'],'benk','Sett deg på tronen',0,'humor',15,'Du sitter på tronen som en ekte prinsesse.'],
+ ['bibliotek','bibliotek','#efe7da','#a88a62',['📚','📖','📕','📗'],'bord','Les en bok',0,'humor',10,'Boka var så spennende at du glemte tiden.'],
+ ['svømmehall|vannland|bad','svom','#dceff6','#9fd2e6',['🏊','🛟','💦','🩱'],'benk','Svøm en tur',0,'hygiene',30,'Du svømte mange lengder. Deilig!'],
+ ['butikk|senter|kjøpesenter|marked','butikk','#efe8da','#cdbfa6',['🛒','👗','👟','🧴'],'benk','Kjøp noe fint (8 mynter)',8,'humor',15,'Du fant noe skikkelig fint.'],
+ ['bestemor|bestefar|tante|onkel|hytte|hus','hjem','#f1e6da','#b08a62',['🛋️','🫖','🧶','🖼️'],'benk','Drikk kakao sammen',0,'humor',14,'Det var så koselig å komme på besøk.'],
+ ['stall|hest|gård|bondegård','stall','#e7d8bf','#a88a62',['🐴','🐄','🌾','🐔'],'benk','Klapp hestene',0,'humor',14,'Hesten blåste deg varmt i håret.'],
+ ['kirke','kirke','#f2efe8','#cfc7b8',['🕯️','🎶','🌸','🔔'],'benk','Hør på koret',0,'humor',8,'Koret sang så vakkert.'],
+ ['politi','politi','#e2e8f0','#b9c0c9',['🚓','👮','📋','🔦'],'benk','Hils på politiet',0,'humor',8,'Politiet viste deg politibilen.'],
+ ['brann','brann','#f4e2dc','#c9a69a',['🚒','🧯','🪖','🔥'],'benk','Prøv brannhjelmen',0,'humor',10,'Du fikk prøve hjelmen og sitte i brannbilen!'],
+ ['post|bank','kontor','#eceae4','#c9c3b6',['📮','✉️','💳','🗂️'],'benk','Snakk med damen i luka',0,'humor',5,'Hun var veldig hyggelig.']];
+const OUTSIDE=/strand|sjø|hav|fjell|skog|park|tivoli|fornøyelsespark|camping|ski|stadion|fotball/;
+function intOf(n){n=wnorm(n);return INT.find(t=>new RegExp(t[0]).test(n))||['','annet','#ede9e2','#c9b89a',['🪴','🛋️','🖼️','☕'],'benk','Se deg rundt',0,'humor',6,'Det er hyggelig her inne.']}
+function insideSVG(){const l=Lf(),st=l.sted||{n:'Et sted',e:'📍'},t=intOf(st.n),dark=parseInt(t[2].slice(1,3),16)<90;
+  let o=sc0([t[2],t[2]],st.n+' inne')+gr(t[3],300)+'<rect x="-640" y="292" width="1920" height="8" fill="'+(dark?'#4a4458':'#f6f4ef')+'"/>';
+  const k=t[1];
+  if(k==='skole')o+='<rect x="190" y="90" width="260" height="130" rx="4" fill="#2f4a3a" stroke="#8a6a4a" stroke-width="8"/><text x="320" y="150" text-anchor="middle" font-family="Jost,sans-serif" font-size="22" fill="#f4f1ea">2 + 2 = 4</text><text x="320" y="190" text-anchor="middle" font-family="Jost,sans-serif" font-size="16" fill="#f4f1ea">Velkommen!</text>';
+  else if(k==='kino')o+='<rect x="100" y="60" width="440" height="180" fill="#f4f1ea"/><text x="320" y="170" text-anchor="middle" font-size="80">🦄</text>'+[0,1,2,3,4,5,6].map(i=>`<rect x="${60+i*78}" y="300" width="64" height="40" rx="8" fill="#9b3b47"/>`).join('');
+  else if(k==='museum'||k==='kirke')o+=[0,1,2].map(i=>`<rect x="${100+i*170}" y="100" width="110" height="90" fill="#fbfaf7" stroke="#c9a36a" stroke-width="8"/><text x="${155+i*170}" y="165" text-anchor="middle" font-size="44">${t[4][i]}</text>`).join('');
+  else if(k==='slott')o+='<rect x="270" y="150" width="100" height="150" rx="10" fill="#9b3b47"/><rect x="260" y="230" width="120" height="30" fill="#c9a227"/><text x="320" y="140" text-anchor="middle" font-size="50">👑</text>'+[80,560].map(x=>`<rect x="${x-14}" y="80" width="28" height="220" fill="#d9c9a0"/>`).join('');
+  else if(k==='svom')o+='<rect x="40" y="300" width="560" height="60" fill="#4fb0d8"/><path d="M40 310Q180 300 320 310T600 310" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/>';
+  else if(k==='bibliotek')o+='<rect x="60" y="90" width="520" height="200" fill="#8a6a4a"/>'+[0,1,2,3].map(r=>`<rect x="66" y="${96+r*48}" width="508" height="42" fill="#6b4f36"/>`+[...Array(20)].map((_,b)=>`<rect x="${72+b*25}" y="${102+r*48}" width="18" height="34" fill="${['#c9736b','#34507a','#e7ddd0','#5d7a5e','#c9a227'][(b+r)%5]}"/>`).join('')).join('');
+  else o+=`<rect x="420" y="90" width="180" height="150" fill="${shade(t[3],-.2)}"/>`+[0,1].map(r=>`<rect x="426" y="${96+r*72}" width="168" height="64" fill="${shade(t[3],-.35)}"/>`+[0,1,2,3].map(i=>`<text x="${448+i*42}" y="${140+r*72}" text-anchor="middle" font-size="26">${t[4][(i+r)%4]}</text>`).join('')).join('');
+  if(k!=='kino'&&k!=='svom')[150,490].forEach((x,i)=>{if(parkSit!=='in'+i)o+=t[5]==='bord'?`<rect x="${x-40}" y="300" width="80" height="8" rx="3" fill="#8a6a4a"/><rect x="${x-4}" y="308" width="8" height="52" fill="#6b4f36"/><text x="${x-12}" y="298" font-size="18">${t[4][1]}</text>`:bench(x)});
+  o+=`<text x="560" y="80" text-anchor="middle" font-size="40">${st.e}</text>`;
+  o+=crowd(3,378,.3,3+st.n.length,40,600);
+  o+=parkWalker(parkSit?(parkSit==='in0'?150:490):l.x,parkSit?t[5]:null);
+  return [o+'</svg>',t[2]]}
 function lifeScene(){
   const l=Lf();
   if(flying)return flyView==='out'?flightSVG():cabinSVG();
@@ -1006,6 +1040,7 @@ function lifeScene(){
   if(l.place==='butikk')return shopSVG();
   if(l.place==='bil')return driveSVG();
   if(l.place==='sted')return stedSVG();
+  if(l.place==='inne')return insideSVG();
   if(l.place==='reise')return destSVG(l.dest,crowd(l.dest==='preikestolen'?2:4,370,.3,7+l.dest.length,-140,l.dest==='preikestolen'?400:780)+crewFigs(l.dest==='preikestolen'?[60,115,230,285,290,345]:[430,485,540,595,370,320],.34,376)+walkerG(l.x,.34,376));
   return roomParts(l.room,state.house.inne[l.room],walkerG(l.x,.36,372),true);
 }
@@ -1709,6 +1744,10 @@ function act(a){
   if(k==='strollhome'){parkSit=null;l.place='ute';l.x=doorX();msg='Dere er hjemme igjen etter turen.';return render()}
   if(k==='drgo'){const vv=a.slice(5),d=driveDests().find(x=>x[3]===vv);if(d)driveTo(d[3],d[0],d[1]);return}
   if(k==='drany')return driveAny(drq);
+  if(k==='stedin'){parkSit=null;l.place='inne';l.x=80;sfx('door');msg='Du går inn.';return render()}
+  if(k==='stedout'){parkSit=null;l.place='sted';l.x=320;sfx('door');msg='';return render()}
+  if(k==='insit'){parkSit='in'+(Math.random()<.5?0:1);need('energi',5);msg=nm+' setter seg.';return render()}
+  if(k==='inact'){const t=intOf((l.sted&&l.sted.n)||'');if(t[7]&&Gm().coins<t[7]){msg='Det koster '+t[7]+' mynter. Du har '+Gm().coins+'.';return render()}if(t[7]){Gm().coins-=t[7];sfx('coin')}else sfx('good');need(t[8],t[9]);if(t[1]==='kino'||t[1]==='skole'||t[1]==='restaurant')parkSit='in0';msg=t[10];return render()}
   if(k==='stedlook'){need('humor',5);msg='Så fint det er her!';return render()}
   if(k==='stedfoto'){need('humor',6);sfx('click');msg='Du tok et fint bilde av '+((l.sted&&l.sted.n)||'stedet')+'.';return render()}
   if(k==='stedtalk'){need('humor',5);msg=pick(['Hei! Fint vær i dag, ikke sant?','Hei! Er du ny her?','Hallo! Så fin du er i dag.','Hei! Har du vært her før?']);return render()}
@@ -1843,7 +1882,8 @@ function lifeBody(){
       +`<div class="acts">${ab('shopout','Gå ut')}</div>`+m}
   if(l.place==='ute')return head('Ute','Utenfor huset')+row('Hjem',ab('in','Gå inn'))
     +row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join(''))+row('Naboer',NB.map((q,i)=>ab('friend:'+(NP+i),'Hils på '+q.name,1)).join(''))+row('Postkasse',(Gm().mail>0?ab('mail','Hent posten ('+Gm().mail+')'):'')+ab('write','Skriv et brev',1)+(Gm().mail>0?'':'<span class="hint">Ingen ny post akkurat nå.</span>'))+row('Bil',ab('drive','Kjør bil',1))+row('Reise',ab('airport','Dra til flyplassen',1))+row('Dyr',ab('petshop','Gå til dyrebutikken',1))+row('Parken',ab('stroll',P().kid.age===0?'Gå på trilletur med '+esc(P().kid.name):P().kid.age>0?'Gå tur i parken med '+esc(P().kid.name):'Gå tur i parken',1))+food+m;
-  if(l.place==='sted'){const st=l.sted||{n:'Et sted',e:'📍'};return head('Du er her',st.e+' '+esc(st.n),'Gå rundt med pilene eller trykk i bildet. Det er folk her også.')+row('Gjør noe',ab('stedlook','Se deg rundt',1)+ab('stedfoto','Ta et bilde',1)+ab('stedtalk','Hils på noen',1))+`<div class="acts">${ab('drive','Sett deg i bilen igjen')}${ab('home','Gå hjem',1)}</div>`+food+m}
+  if(l.place==='sted'){const st=l.sted||{n:'Et sted',e:'📍'};return head('Du er her',st.e+' '+esc(st.n),'Gå rundt med pilene eller trykk i bildet. Det er folk her også.')+(OUTSIDE.test(wnorm(st.n))?'':`<div class="acts">${ab('stedin','Gå inn')}</div>`)+row('Gjør noe',ab('stedlook','Se deg rundt',1)+ab('stedfoto','Ta et bilde',1)+ab('stedtalk','Hils på noen',1))+`<div class="acts">${ab('drive','Sett deg i bilen igjen')}${ab('home','Gå hjem',1)}</div>`+food+m}
+  if(l.place==='inne'){const st=l.sted||{n:'Et sted',e:'📍'},t=intOf(st.n);return head('Inne',st.e+' '+esc(st.n),'Det er folk her inne. Gå rundt, sett deg eller finn på noe.')+row('Gjør noe',ab('inact',t[6])+(parkSit?ab('parkstand','Reis deg',1):(t[1]==='kino'||t[1]==='svom'?'':ab('insit:0','Sett deg',1)))+ab('stedtalk','Snakk med noen',1))+`<div class="acts">${ab('stedout','Gå ut')}</div>`+m}
   if(l.place==='bil'){const nr=STOPS.find(q=>Math.abs(q[1]-l.cx)<120);
     return (DR.auto?head('På veien','Kjører til '+esc(DR.auto.name),'Bilen kjører selv. Du er snart fremme.'):head('På veien',nr?nr[2]:'Kjør bil','Skriv hvor du vil kjøre, eller hold inne pilene i bildet.')+`<div class="row"><h2><label for="drq">Hvor vil du kjøre?</label></h2><input class="txt" id="drq" type="search" maxlength="28" autocomplete="off" enterkeyhint="go" placeholder="For eksempel stranda, parken eller Emma" value="${esc(drq)}"></div><div id="drres">${dresults()}</div>`)
       +(!nr?'':nr[0]==='friends'?row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join('')):`<div class="acts">${ab(nr[0],nr[0]==='home'?'Parker hjemme':'Parker og gå inn')}</div>`)
