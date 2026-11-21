@@ -761,7 +761,7 @@ function hud(){const g=Gm(),n=g.needs,nm=esc(P().name)||'Hun',low=n.sult<25?nm+'
   return `<div class="hud"><div class="hudtop"><span class="coin">${g.coins} mynter</span><span>Nivå ${level()}</span><span class="xp" title="Poeng til neste nivå"><b style="width:${g.xp%100}%"></b></span></div><div class="needs" id="needs">${needsHTML()}</div>${low?`<p class="hint">${low}</p>`:''}</div>`}
 const tasksHTML=()=>row('Oppdrag',`<ul class="tasks">${['a','b','c'].map(sl=>{const t=Gm().tasks[sl];return `<li>${esc(taskText(t))}<span>+${taskPay(t)}</span></li>`}).join('')}</ul>`)+'<p class="hint">Oppdrag gir mynter og poeng. Er alle behov over halvfulle, får du halvannen gang så mange mynter.</p>';
 const kidRow=()=>kidRow0()+((P().kids||[]).length?row('Flere barn','<button type="button" class="chip" data-tab="barn">Bytt barn (fanen Barn)</button>'):'');
-const kidRow0=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food',Lf().food?'Gi barnet '+esc(Lf().food.name.toLowerCase()):'Gi mat',1))};
+const kidRow0=()=>{const kd=P().kid,n=esc(kd.name);return kd.age<0?row('Familie','<button type="button" class="chip" data-tab="barn">Få et barn (fanen Barn)</button>'):kd.age===0?row(n+', baby',(use3()&&Lf().place==='hjem'?(G3.carry?ab('kid:down','Legg babyen i senga',1):ab('kid:carry','Hold babyen')):'')+ab('kid:bottle','Gi flaske',1)+ab('kid:cuddle','Kos',1)+ab('kid:song','Syng en sang',1)):row(n+(kd.age>1?', barn':', smårolling'),ab('kid:play','Lek',1)+ab('kid:read','Les en bok',1)+ab('kid:food',Lf().food?'Gi barnet '+esc(Lf().food.name.toLowerCase()):'Gi mat',1))};
 const petRow=()=>{const pt=P().pet;return pt.type==='none'?'':row(esc(pt.name)||'Kjæledyr',ab('pet','Klapp',1)+ab('petplay','Lek',1)+ab('petfeed','Gi mat',1)+(use3()&&Lf().place==='hjem'?ab('petbed',G3.petBed?'Kall på '+esc(pt.name):'Send til '+(pt.type==='hund'?'hundesenga':'senga'),1):''))};
 function tick(){if(state.tab!=='liv'||flying||cook)return;need('sult',-1.2);need('energi',-.8);need('hygiene',-.7);need('humor',-.9);const pt=P().pet;if(pt.type!=='none')pt.glad=Math.max(0,pt.glad-1);if(P().kid.age>=0){P().kid.glad=Math.max(0,P().kid.glad-.8);P().kid.mett=Math.max(0,P().kid.mett-1)}
   if(Lf().pending&&Gm().mail<3&&Math.random()<.35){Gm().mail++;toast('Det har kommet post i postkassa.')}
@@ -891,6 +891,33 @@ function crowd(n,fy,k,seed,x0,x1){
     o+=`<g>${still?'':`<animateTransform attributeName="transform" type="translate" values="${f?a:b} 0;${f?b:a} 0;${f?a:b} 0" dur="${dur*2}s" begin="-${ph}s" repeatCount="indefinite"/>`}<g transform="translate(${(-150*kk).toFixed(1)} ${(y-598*kk).toFixed(1)}) scale(${kk.toFixed(3)})">${still?'':'<animateTransform attributeName="transform" type="translate" additive="sum" values="0 0;0 -6;0 0" dur=".55s" repeatCount="indefinite"/>'}${CSV[j]}</g></g>`}
   return o;
 }
+
+const STROLL=[['ender',150,'Andedammen'],['lek',345,'Lekeplassen'],['is',540,'Iskiosken']];
+function pram(kd,L){const c=(kd.look&&kd.look.topColor)||(kd.girl?'#e9cfd0':'#cfd9e3');
+  return `<g><path d="M214 318L246 330L262 420" stroke="#2b2d31" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="198" y="312" width="26" height="10" rx="5" fill="#2b2d31"/>`
+   +`<path d="M246 420L426 420Q434 500 380 518L292 518Q246 506 246 420Z" fill="${shade(c,-.25)}"/><path d="M250 420Q300 330 400 360L420 420Z" fill="${shade(c,-.45)}"/>`
+   +`<circle cx="372" cy="414" r="30" fill="${L.skin}"/><path d="M344 404Q350 380 374 384Q396 386 400 406Q384 394 364 398Z" fill="${L.hairColor}"/><circle cx="364" cy="414" r="2.6" fill="#1d1020"/><circle cx="382" cy="414" r="2.6" fill="#1d1020"/><path d="M366 426Q373 430 380 426" stroke="#b5616a" stroke-width="2" fill="none" stroke-linecap="round"/>`
+   +`<path d="M262 430L406 430L404 452L264 452Z" fill="${c}"/>`
+   +`<path d="M290 518L300 560M390 518L380 560" stroke="#2b2d31" stroke-width="6"/><circle cx="300" cy="572" r="22" fill="#1d1f23"/><circle cx="300" cy="572" r="9" fill="#9ba1a8"/><circle cx="384" cy="572" r="22" fill="#1d1f23"/><circle cx="384" cy="572" r="9" fill="#9ba1a8"/></g>`}
+function strollSVG(){
+  const l=Lf(),p=P(),kd=p.kid;let o=sc0(['#8fc1ea','#e6f1f8'],'Trilletur')+'<g fill="#fff" opacity=".85"><ellipse cx="110" cy="70" rx="60" ry="14"/><ellipse cx="130" cy="58" rx="34" ry="16"/><ellipse cx="480" cy="96" rx="60" ry="12"/></g>';
+  o+='<path d="M-640 290Q-200 230 120 270T640 250T1280 290L1280 400L-640 400Z" fill="#6f9f5c"/>'+gr('#7fae63',300)+'<path d="M-640 352Q0 336 320 348T1280 350L1280 384Q640 376 320 380T-640 386Z" fill="#d9cdb4"/>';
+  [[30,1],[250,.8],[470,1.1],[620,.9]].forEach(t=>{const x=t[0],k=t[1];o+=`<rect x="${x-5}" y="${300-90*k}" width="10" height="${90*k}" fill="#6b4a35"/><circle cx="${x}" cy="${300-100*k}" r="${34*k}" fill="#4f8f52"/><circle cx="${x+20*k}" cy="${300-84*k}" r="${24*k}" fill="#458248"/>`});
+  o+='<ellipse cx="150" cy="322" rx="92" ry="22" fill="#6fb6d6"/><ellipse cx="150" cy="318" rx="80" ry="15" fill="#8fcbe2"/>';
+  [[118,316],[168,320],[196,312]].forEach((d,i)=>{o+=`<g transform="translate(${d[0]} ${d[1]})"><ellipse cx="0" cy="0" rx="11" ry="6" fill="${i===1?'#7a5a3e':'#f4f1ea'}"/><circle cx="9" cy="-7" r="5" fill="${i===1?'#3f6b52':'#f4f1ea'}"/><path d="M13 -7l6 1l-6 2z" fill="#e9813c"/></g>`});
+  o+='<path d="M300 336L300 250L390 250L390 336" stroke="#c4313f" stroke-width="7" fill="none"/><path d="M300 250L345 228L390 250" stroke="#c4313f" stroke-width="7" fill="none"/><path d="M332 252L332 300M358 252L358 300" stroke="#55595f" stroke-width="2"/><rect x="324" y="300" width="42" height="7" rx="2" fill="#c9a227"/><path d="M398 336L430 290L462 336Z" fill="#7fa3c7"/><rect x="406" y="318" width="48" height="6" fill="#5f87ad"/>';
+  o+='<rect x="500" y="250" width="86" height="86" rx="6" fill="#fbfaf7" stroke="#c97b84" stroke-width="3"/><path d="M492 252L543 222L594 252Z" fill="#c97b84"/><text x="543" y="282" text-anchor="middle" font-family="Jost,sans-serif" font-size="13" font-weight="600" fill="#9b3b47">IS</text><path d="M532 296L543 326L554 296Z" fill="#dba54e"/><circle cx="543" cy="292" r="10" fill="#f2b5c4"/>';
+  o+='<text x="320" y="40" text-anchor="middle" font-family="Jost,sans-serif" font-size="15" font-weight="600" letter-spacing="3" fill="#34507a">PARKEN</text>';
+  const sc=.3*Ft().h,fy=382;let inner=girl();
+  if(kd.age===0)inner+=pram(kd,kidLook());
+  else if(kd.age>0){dl=kidLook();const kg=girl(),ks=kidLook().feat.h/Ft().h;dl=null;inner+=`<g transform="translate(${(210).toFixed(0)} ${(598-598*ks).toFixed(1)}) scale(${ks.toFixed(3)})">${kg}</g>`}
+  o+=`<g id="walker" data-sc="${sc}" data-fy="${fy}" transform="${wt(l.x,sc,fy,0)}">${inner}</g>`;
+  return [o+'</svg>','#8fc1ea']}
+function strollAct(id){const p=P(),kd=p.kid,n=esc(kd.name),sp=STROLL.find(q=>q[0]===id);if(!sp)return;
+  doAt(sp[1],()=>{if(id==='ender'){need('humor',8);kd.glad=Math.min(100,kd.glad+10);sfx('squeak');msg=(kd.age===0?n+' ser på endene og smiler.':n+' kaster brødsmuler til endene.')}
+    else if(id==='lek'){need('humor',10);kd.glad=Math.min(100,kd.glad+15);sfx('giggle');msg=kd.age===0?n+' ser på de store barna som leker og ler.':n+' husker og sklir og ler høyt.'}
+    else{if(Gm().coins<5){msg='En is koster 5 mynter.';return render()}Gm().coins-=5;need('sult',10);need('humor',6);kd.glad=Math.min(100,kd.glad+8);sfx('pop');msg='Dere kjøper is. '+(kd.age===0?n+' får smake litt på kjeksen.':n+' får jordbæris.')}
+    if(!Lf().strolled){Lf().strolled=1;fire('kid')}render()})}
 function lifeScene(){
   const l=Lf();
   if(flying)return flyView==='out'?flightSVG():cabinSVG();
@@ -900,6 +927,7 @@ function lifeScene(){
     return roomParts('stue',FR[l.friend],`<g transform="${wt(200,k,366,0)}">${fg}</g><rect x="${bx}" y="${96}" width="${w}" height="30" rx="10" fill="#fff" stroke="#0003"/><path d="M196 125l4 12l10-12z" fill="#fff"/><text x="${bx+13}" y="116" font-family="Jost,sans-serif" font-size="13" fill="#1d1b22">${esc(t)}</text>`+myB+walkerG(l.x,.36,372))}
   if(l.place==='flyplass')return airportSVG(crowd(4,372,.3,3,-120,760)+crewFigs([300,350,60,110,400,455],.34,378)+walkerG(l.x,.34,378));
   if(l.place==='dyr')return petShopSVG(walkerG(l.x,.34,378));
+  if(l.place==='trille')return strollSVG();
   if(l.place==='bil')return driveSVG();
   if(l.place==='reise')return destSVG(l.dest,crowd(l.dest==='preikestolen'?2:4,370,.3,7+l.dest.length,-140,l.dest==='preikestolen'?400:780)+crewFigs(l.dest==='preikestolen'?[60,115,230,285,290,345]:[430,485,540,595,370,320],.34,376)+walkerG(l.x,.34,376));
   return roomParts(l.room,state.house.inne[l.room],walkerG(l.x,.36,372),true);
@@ -1048,7 +1076,7 @@ function build3(){
     [[7.65,4.25],[8.55,4.25]].forEach(q=>G3.obs.push([q[0],q[1],.5,1]))}
   if(!away&&P().kid.age===0){const kd=P().kid;B(g,9.85,10.65,3.3,3.38,1.95,2.65,wh);legs(9.85,10.65,[3,3.3],1.95,2.65,wood);B(g,9.85,10.65,3.36,3.4,1.95,2.65,'#f6f4ef');
     for(let x=9.85;x<10.66;x+=.1){B(g,x-.012,x+.012,3.38,3.72,1.95,1.975,wood);B(g,x-.012,x+.012,3.38,3.72,2.625,2.65,wood)}[1.95,2.63].forEach(z=>B(g,9.84,10.66,3.72,3.75,z,z+.025,wood));[9.84,10.64].forEach(x=>{B(g,x,x+.02,3.38,3.75,1.95,2.65,wood)});
-    const bb=Sp(g,10.25,3.46,2.24,1,(kd.look&&kd.look.topColor)||(kd.girl?'#e9cfd0':'#cfd9e3'));bb.scale.set(.1,.07,.17);Sp(g,10.25,3.5,2.46,.068,P().skin);const hh=Sp(g,10.25,3.53,2.44,1,P().hairColor);hh.scale.set(.066,.045,.06);G3.obs.push([10.25,2.3,.62,1])}
+    if(!G3.carry){const L=kidLook(),bb=Sp(g,10.25,3.46,2.24,1,(kd.look&&kd.look.topColor)||(kd.girl?'#e9cfd0':'#cfd9e3'));bb.scale.set(.1,.07,.17);Sp(g,10.25,3.5,2.46,.068,L.skin);const hh=Sp(g,10.25,3.53,2.44,1,L.hairColor);hh.scale.set(.066,.045,.06)}G3.obs.push([10.25,2.3,.62,1])}
   art(8,3,So.art);win(9.95,3,So.items.gardiner);
   const Ba=I.bad,ac=Ba.main;
   B(g,11.06,16,3,4.3,0,.02,tileMat());B(g,11.15,12.35,3,3.06,.1,1.3,wh);B(g,11.15,12.35,3.06,5,1.28,1.3,'#bfe0ec','g');B(g,12.33,12.35,3.06,5,.1,1.3,'#bfe0ec','g');B(g,12.31,12.37,3.06,5,1.27,1.31,st,'s');
@@ -1133,6 +1161,9 @@ function buildMe(tg){
   rig.ty=1;
   if(s.child){const pv=new T.Group();pv.position.set(0,1.6,0);ti.add(pv);g.updateMatrixWorld(true);ti.children.slice(n0,ti.children.length-1).forEach(c=>pv.attach(c));pv.scale.setScalar(1.3);
     const d=.82*(1-.75);bd.children.forEach(c=>{c.position.y-=d});rig.hip.forEach(h=>{h.scale.y=.75});rig.ty=1-d}
+  if(!tg){G3.baby=null;if(P().kid.age===0){const kd=P().kid,L=kidLook(),bg=new T.Group(),top=(kd.look&&kd.look.topColor)||(kd.girl?'#e9cfd0':'#cfd9e3');
+      const bb=Sp(bg,.03,1.14,.23,1,top);bb.scale.set(.15,.085,.095);const ft=Sp(bg,.19,1.12,.23,1,top);ft.scale.set(.06,.06,.07);Sp(bg,-.13,1.19,.23,.068,L.skin);
+      const hh=Sp(bg,-.15,1.22,.22,1,L.hairColor);hh.scale.set(.06,.045,.062);Sp(bg,-.08,1.18,.29,.012,'#ff9bb0');bg.position.set(0,-1,0);bg.visible=!!G3.carry;tr.add(bg);G3.baby=bg}}
   if(!tg)G3.rig=rig;g.scale.setScalar(f.h);return rig;
 }
 function buildPet(){
@@ -1202,7 +1233,8 @@ function poseRig(R,a,p,climb,now){
   R.bd.position.y=a*(.02*Math.cos(2*p)-.018);R.bd.position.x=a*.014*Math.sin(p);R.bd.rotation.z=a*.025*Math.sin(p);
   R.tr.rotation.y=-.13*a*Math.sin(p);R.tr.rotation.x=.05*a;R.tr.position.y=(R.ty||1)+.004*idle;
 }
-function pose(now){if(G3.rig)poseRig(G3.rig,G3.amp,G3.ph,G3.climb,now)}
+function cradle(R){R.arm[0].rotation.set(-.95,0,.32);R.elbow[0].rotation.x=-1.25;R.arm[1].rotation.set(-.75,0,-.38);R.elbow[1].rotation.x=-1.45}
+function pose(now){if(G3.rig){poseRig(G3.rig,G3.amp,G3.ph,G3.climb,now);if(G3.carry&&!G3.act)cradle(G3.rig)}}
 function kidCands(girl){const q=state.people[state.cur],si=SKIN.indexOf(q.skin),hi=HAIR.indexOf(q.hairColor),sk=d=>SKIN[Math.max(0,Math.min(5,(si<0?1:si)+d))],hc=d=>HAIR[((hi<0?2:hi)+d+8)%6];
   const ey=d=>EYES[(Math.max(0,EYES.indexOf(q.eyes))+d)%EYES.length];
   return [{skin:sk(0),eyes:ey(1),hairColor:hc(2),hair:girl?'hestehale':'kort',freckles:true},{skin:sk(1),eyes:ey(2),hairColor:hc(1),hair:girl?'fletter':'kroller'},{skin:sk(-1),eyes:ey(3),hairColor:hc(4),hair:girl?'lob':'kort'},{skin:sk(2),eyes:ey(4),hairColor:hc(-1),hair:girl?'kroller':'kort'}]
@@ -1370,7 +1402,7 @@ function plan(h,x,z,Y){
   else{if(goUp)p.push({x:.65,z:.8},{x:.65,z:3.1});else p.push({x:4.62,z:.8},{x:4.62,z:3.1})}
   p.push({x:x,z:3.1},{x:x,z:z});return p;
 }
-function leave3(){sfx('door');const l=Lf();G3.path=null;G3.after=null;l.place='ute';l.x=doorX();msg='';render()}
+function leave3(){sfx('door');if(G3.carry){G3.carry=false;if(G3.baby)G3.baby.visible=false}const l=Lf();G3.path=null;G3.after=null;l.place='ute';l.x=doorX();msg='';render()}
 function stepAside(who,vx,vz){
   const o=who==='hb'?G3.hb:G3.kp;if(!o)return;const n=Math.hypot(vx,vz)||1,px=-vz/n,pz=vx/n,fl=o.y>1.5?1:0;
   const ok=(x,z)=>yAt(x,z,o.y)!=null&&z>=1.75&&!G3.obs.some(b=>b[3]===fl&&Math.hypot(x-b[0],z-b[1])<b[2])&&!((Math.abs(x-5)<.25||Math.abs(x-11)<.25)&&(z<2.75||z>3.85));
@@ -1413,7 +1445,7 @@ function loop3(now){
   requestAnimationFrame(loop3);
 }
 function sync3(){
-  const H=state.house,l=Lf(),away=l.place==='venn',k=JSON.stringify([away?l.friend:H.inne,P().kid.age,P().pet.type,P().pet.collar,H.time,H.wall,H.door,H.roofColor,l.tv,state.rain]),ck=state.cur+JSON.stringify(P(),(n,v)=>n==='glad'||n==='oops'||n==='xp'?undefined:v);
+  const H=state.house,l=Lf(),away=l.place==='venn',k=JSON.stringify([away?l.friend:H.inne,P().kid.age,P().pet.type,P().pet.collar,H.time,H.wall,H.door,H.roofColor,l.tv,state.rain,!!G3.carry]),ck=state.cur+JSON.stringify(P(),(n,v)=>n==='glad'||n==='oops'||n==='xp'?undefined:v);
   if(k!==G3.key){G3.key=k;build3()}
   if(yAt(l[HK()].x,l[HK()].z,l[HK()].y)==null)l[HK()]={x:8,z:3.1,y:0};
   if(ck!==G3.ckey){G3.ckey=ck;buildMe();buildPet();buildKid();G3.pp=null;G3.kp=null}
@@ -1590,6 +1622,9 @@ function act(a){
   if(k==='wnext'){const w=work;if(!w)return;if(w.i>=4){w.done=true;if(w.right===5){w.earned+=10;Gm().coins+=10}need('energi',-15);need('sult',-10);need('humor',10);sfx('level');fire('job');return render()}w.i++;w.ans=-1;return render()}
   if(k==='wagain'){const w=work,j=WJOBS.find(x=>x.id===w.id)||{name:w.name,e:w.e,bg:w.bg,t:[]};return wstart(j)}
   if(k==='wend'){work=null;return render()}
+  if(k==='stroll'){l.place='trille';l.x=60;l.strolled=0;sfx('door');msg=P().kid.age===0?nm+' legger '+P().kid.name+' i barnevogna.':nm+' og '+P().kid.name+' går en tur i parken.';return render()}
+  if(k==='strollgo')return strollAct(v);
+  if(k==='strollhome'){l.place='ute';l.x=doorX();msg='Dere er hjemme igjen etter turen.';return render()}
   if(k==='letterdone'){l.letter=null;return render()}
   if(k==='petbed'){G3.petBed=!G3.petBed;msg=G3.petBed?p.pet.name+' går og legger seg i '+(p.pet.type==='hund'?'hundesenga':'senga si')+'.':p.pet.name+' kommer løpende.';if(!G3.petBed)G3.petJump=.8;sfx(p.pet.type==='hund'?'bark':p.pet.type==='katt'?'meow':'squeak');return render()}
   if(k==='kidbed'){if(G3.kbed){G3.kbed=false;msg=p.kid.name+' er våken og vil leke.';sfx('giggle');return render()}
@@ -1607,6 +1642,8 @@ function act(a){
   if(k==='kidback'){G3.kedit=false;return render()}
   if(k==='kidsel'){const j=+v,o=p.kids&&p.kids[j];if(o){G3.kedit=true;p.kids[j]=p.kid;p.kid=o;G3.kbed=false;G3.kseat=null;msg=o.name+' blir med deg nå.'}return render()}
   if(k==='kidok'){const f=G3.kform;G3.kform=null;if(p.kid.age>=0){p.kids=p.kids||[];if(p.kids.length>=99){msg='Du har 100 barn. Det er det meste man kan ha.';return render()}p.kids.push(p.kid);G3.kbed=false;G3.kseat=null}const cd=kidCands(f.girl)[f.c||0];p.kid={age:0,name:(f.name||'').trim()||(f.girl?'Lillemor':'Lillebror'),xp:0,glad:85,girl:f.girl,look:Object.assign({freckles:false,skin:'',eyes:'',hair:'',hairColor:'',top:'',topColor:'',bottom:'',bottomColor:'',dress:'none',dressColor:'#7fa3c7',shoes:'',shoeColor:''},cd)};need('humor',30);msg='Gratulerer! '+p.kid.name+' er født og ligger i sprinkelsenga på soverommet.';toast('Du har fått barn: '+p.kid.name+'.');return render()}
+  if(k==='kid'&&v==='carry'){if(G3.carry)return;msg=nm+' går bort til sprinkelsenga.';render();return walkTo(9.55,2.3,3,()=>{if(G3.me)G3.me.rotation.y=Math.PI/2;G3.carry=true;if(G3.baby)G3.baby.visible=true;sfx('giggle');msg=nm+' holder '+p.kid.name+'. Babyen blir med der du går.';render()})}
+  if(k==='kid'&&v==='down')return walkTo(9.55,2.3,3,()=>{if(G3.me)G3.me.rotation.y=Math.PI/2;G3.carry=false;if(G3.baby)G3.baby.visible=false;msg=p.kid.name+' ligger i sprinkelsenga igjen.';render()});
   if(k==='kid'){if(v==='play'||v==='cuddle')setTimeout(()=>sfx('giggle'),600);const kd=p.kid;let T={bottle:' drikker flaska si.',cuddle:' koser seg i armene dine.',song:' sovner til sangen din.',play:' ler og hopper.',read:' hører på eventyret.',food:' spiser opp maten sin.'}[v],done=()=>{
       kd.xp++;kd.glad=Math.min(100,kd.glad+20);need('humor',8);msg=kd.name+T;
       if(kd.age===0&&kd.xp>=4){kd.age=1;msg=kd.name+' har vokst og kan gå selv!';toast(msg)}else if(kd.age===1&&kd.xp>=10){kd.age=2;msg=kd.name+' er blitt et stort barn.';toast(msg)}
@@ -1616,6 +1653,7 @@ function act(a){
       T=' spiser '+dish+(own&&own.ok?'. Det smakte kjempegodt!':'.');
       if(use3()&&l.place==='hjem'&&kd.age>0&&state.house.inne.kjokken.items.spisebord){msg=nm+' setter fram mat til '+kd.name+'.';render();
         return walkTo(12.7,3.4,0,()=>{if(G3.me)G3.me.rotation.y=Math.atan2(.55,.95);G3.kseat={t:4.5,done:done};msg=kd.name+' spiser '+dish+' ved kjøkkenbordet.';render()})}}
+    if(use3()&&l.place==='hjem'&&kd.age===0&&G3.carry){if(G3.me)G3.me.rotation.y=0;return done()}
     if(use3()&&l.place==='hjem'&&kd.age===0)return walkTo(9.55,2.3,3,()=>{if(G3.me)G3.me.rotation.y=Math.PI/2;G3.act='bend';G3.actT=1.6;done()});
     if(use3()&&kd.age>0){G3.kjump=1.1;G3.act='bend';G3.actT=1.6}
     return done()}
@@ -1708,8 +1746,11 @@ function lifeBody(){
       +`<div class="row"><h2><label for="ltxt">Brevet</label></h2><textarea class="txt ltxt" id="ltxt" maxlength="400" placeholder="Kjære ${esc(w.to)||'…'}">${esc(w.text)}</textarea></div>`
       +row('Ferdige setninger',PHRASES.map((t,i)=>ab('wadd:'+i,t,1)).join(''))+`<div class="acts">${ab('wsend','Send brevet')}${ab('wcancel','Avbryt',1)}</div>`+m}
   if(l.place==='ute'&&l.letter&&l.letter.body)return letterHTML();
+  if(l.place==='trille'){const kd=P().kid,n=esc(kd.name),nr=STROLL.find(q=>Math.abs(q[1]-l.x)<70);
+    return head('Trilletur',nr?nr[2]:'I parken',(kd.age===0?n+' ligger i barnevogna.':n+' går ved siden av deg.')+' Trykk i bildet for å gå, eller velg et sted.')
+      +row('Gå til',ab('strollgo:ender','Mat endene ved dammen',1)+ab('strollgo:lek','Lekeplassen',1)+ab('strollgo:is','Kjøp is (5 mynter)',1))+`<div class="acts">${ab('strollhome','Gå hjem')}</div>`+food+m}
   if(l.place==='ute')return head('Ute','Utenfor huset')+row('Hjem',ab('in','Gå inn'))
-    +row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join(''))+row('Naboer',NB.map((q,i)=>ab('friend:'+(NP+i),'Hils på '+q.name,1)).join(''))+row('Postkasse',(Gm().mail>0?ab('mail','Hent posten ('+Gm().mail+')'):'')+ab('write','Skriv et brev',1)+(Gm().mail>0?'':'<span class="hint">Ingen ny post akkurat nå.</span>'))+row('Bil',ab('drive','Kjør bil',1))+row('Reise',ab('airport','Dra til flyplassen',1))+row('Dyr',ab('petshop','Gå til dyrebutikken',1))+food+m;
+    +row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join(''))+row('Naboer',NB.map((q,i)=>ab('friend:'+(NP+i),'Hils på '+q.name,1)).join(''))+row('Postkasse',(Gm().mail>0?ab('mail','Hent posten ('+Gm().mail+')'):'')+ab('write','Skriv et brev',1)+(Gm().mail>0?'':'<span class="hint">Ingen ny post akkurat nå.</span>'))+row('Bil',ab('drive','Kjør bil',1))+row('Reise',ab('airport','Dra til flyplassen',1))+row('Dyr',ab('petshop','Gå til dyrebutikken',1))+(P().kid.age>=0?row('Trilletur',ab('stroll',(P().kid.age===0?'Gå på trilletur med ':'Gå tur med ')+esc(P().kid.name),1)):'')+food+m;
   if(l.place==='bil'){const nr=STOPS.find(q=>Math.abs(q[1]-l.cx)<120);
     return head('På veien',nr?nr[2]:'Kjør bil','Hold inne pilene i bildet, eller bruk piltastene.')
       +(!nr?'':nr[0]==='friends'?row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join('')):`<div class="acts">${ab(nr[0],nr[0]==='home'?'Parker hjemme':'Parker og gå inn')}</div>`)
