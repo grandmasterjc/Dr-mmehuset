@@ -970,6 +970,45 @@ function shopBuy(i){const l=Lf(),S=SHOPS[l.shop2],it=S&&S.items[i];if(!it)return
   else if(it[3]==='plante'){state.house.inne.stue.items.plante=true;state.house.inne.soverom.items.plante=true;state.house.inne.bad.items.plante=true;msg='Du kjøpte en potteplante. Den står hjemme nå.'}
   else{need(it[3],it[4]);msg='Du kjøpte '+it[0].toLowerCase()+'. Mmm!'}
   render()}
+
+let drq='';
+const DEMO=[['strand','🏖️'],['bad','🏖️'],['sjø','🌊'],['hav','🌊'],['skole','🏫'],['barnehage','🧸'],['sykehus','🏥'],['lege','🏥'],['kino','🎬'],['svømmehall','🏊'],['fjell','⛰️'],['skog','🌲'],['zoo','🦁'],['dyrepark','🦁'],['museum','🏛️'],['slott','🏰'],['tivoli','🎡'],['fornøyelsespark','🎢'],['butikk','🛒'],['senter','🛍️'],['kjøpesenter','🛍️'],['kirke','⛪'],['stadion','🏟️'],['fotball','⚽'],['bibliotek','📚'],['gård','🚜'],['hytte','🛖'],['restaurant','🍽️'],['pizza','🍕'],['frisør','💇'],['bensin','⛽'],['sjokolade','🍫'],['is','🍦'],['bestemor','👵'],['bestefar','👴'],['by','🏙️'],['oslo','🏙️'],['bergen','⛵'],['tromsø','🌌'],['ski','⛷️'],['camping','🏕️'],['politi','🚓'],['brann','🚒'],['post','📮'],['bank','🏦'],['hotell','🏨'],['vannland','💦'],['lekeland','🤸'],['stall','🐴'],['hest','🐴']];
+function driveDests(){const L=[['Hjem','🏠',['hjemme','huset','hus'],'home'],['Parken','🌳',['park','lekeplass','dam','fontene','benk'],'park'],['Iskiosken','🍦',['is','iskiosk'],'park:is'],['Dyrebutikken','🐾',['dyr','kjæledyr','katt','hund','kanin'],'petshop'],['Flyplassen','✈️',['fly','reise','ferie'],'airport']];
+  Object.keys(SHOPS).forEach(id=>L.push([SHOPS[id].name,SHOPS[id].e[0],[id,SHOPS[id].name.toLowerCase().replace(/en$|et$/,'')],'shop:'+id]));
+  state.people.forEach((q,i)=>{if(i!==state.cur)L.push([(q.name||'Venn')+' (venn)','🏡',[wnorm(q.name)],'friend:'+i])});
+  NB.forEach((q,i)=>L.push([q.name+' (nabo)','🏘️',[wnorm(q.name),'nabo'],'friend:'+(NP+i)]));return L}
+function dfind(q){q=wnorm(q);if(!q)return [];return driveDests().map(d=>{const ns=[wnorm(d[0])].concat(d[2]);let s=0;ns.forEach(n=>{if(!n)return;if(n===q)s=Math.max(s,4);else if(n.indexOf(q)===0)s=Math.max(s,3);else if(n.indexOf(q)>=0||(n.length>3&&q.indexOf(n)>=0))s=Math.max(s,2)});return [s,d]}).filter(x=>x[0]).sort((a,b)=>b[0]-a[0]).map(x=>x[1]).slice(0,8)}
+function dresults(){const q=String(drq||'').trim(),f=dfind(q),list=(q?f:driveDests().slice(0,9)).map(d=>`<button type="button" class="chip" data-act="drgo:${d[3]}">${d[1]} ${esc(d[0])}</button>`).join('');
+  return (q?`<div class="acts"><button type="button" class="btn" data-act="drany">Kjør til «${esc(q.slice(0,28))}»</button></div><div class="opts" style="margin-top:8px">${list}</div>`:row('Steder',list))}
+function driveTo(go,name,e){if(!belted()){msg='Alle må ha setebeltet på før bilen kan kjøre.';sfx('bad');return render()}
+  const l=Lf(),tx=l.cx<1600?l.cx+1300:l.cx-1300;DR.auto={tx:tx,go:go,name:name,e:e};msg='Kjører til '+name+' …';drq='';render()}
+function driveAny(q){q=String(q||'').trim().slice(0,28);if(!q){msg='Skriv hvor du vil kjøre.';return render()}
+  const f=dfind(q),n=wnorm(q);if(f.length&&(wnorm(f[0][0])===n||f[0][2].indexOf(n)>=0||wnorm(f[0][0]).indexOf(n)===0))return driveTo(f[0][3],f[0][0],f[0][1]);
+  const e=(DEMO.find(x=>n.indexOf(x[0])>=0)||[0,'📍'])[1];driveTo('sted',q.charAt(0).toUpperCase()+q.slice(1),e)}
+function arriveDrive(d){const l=Lf();fire('drive');sfx('door');loop('engine',false);msg='';
+  const g=d.go;
+  if(g==='home'){l.place='ute';l.x=doorX();msg='Du parkerte hjemme.'}
+  else if(g==='park'||g==='park:is'){parkSit=null;l.place='trille';l.x=g==='park'?60:2900;l.strolled=0}
+  else if(g.indexOf('shop:')===0){const id=g.slice(5);parkSit=null;l.place='butikk';l.shop2=id;l.px=(PARK.find(q=>q[0]===id)||[0,1000])[1];l.x=90;msg='Du parkerte og gikk inn i '+SHOPS[id].name.toLowerCase()+'.'}
+  else if(g==='petshop'){l.place='dyr';l.x=150}
+  else if(g==='airport'){l.place='flyplass';l.x=200}
+  else if(g.indexOf('friend:')===0)return act(g);
+  else{l.place='sted';l.sted={n:d.name,e:d.e};l.x=320;msg='Du er fremme ved '+d.name+'.'}
+  render()}
+function stedSVG(){const l=Lf(),st=l.sted||{n:'Et sted',e:'📍'},n=wnorm(st.n),beach=/strand|bad|sjø|hav|vannland/.test(n),snow=/ski|fjell|tromsø/.test(n),city=/by|oslo|senter|kjøpesenter|hotell|bank|post|kino|museum/.test(n);
+  let o=sc0(snow?['#cfe0ef','#f2f7fb']:['#8fc1ea','#e6f1f8'],st.n);
+  o+='<g fill="#fff" opacity=".85"><ellipse cx="110" cy="70" rx="60" ry="14"/><ellipse cx="480" cy="96" rx="60" ry="12"/></g>';
+  if(beach)o+='<rect x="-640" y="250" width="1920" height="60" fill="#5fa8d3"/><path d="M-640 262Q-300 252 0 262T640 262T1280 262" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/>'+gr('#ecd9a8',300);
+  else if(snow)o+='<path d="M-640 300L-200 140L60 300ZM20 300L300 100L600 300ZM420 300L760 150L1100 300Z" fill="#9aa8b6"/><path d="M220 158L300 100L380 158L340 150L300 170L260 150Z" fill="#fff"/>'+gr('#f4f7fa',300);
+  else if(city)o+=[0,1,2,3,4,5,6].map(i=>`<rect x="${-40+i*105}" y="${300-90-((i*53)%80)}" width="90" height="${90+((i*53)%80)}" fill="${['#b9b2a6','#8c8f96','#c7b299','#56707f'][i%4]}"/>`).join('')+gr('#b9b6ae',300);
+  else o+='<path d="M-640 290Q-200 230 120 270T640 250T1280 290L1280 400L-640 400Z" fill="#6f9f5c"/>'+gr('#7fae63',300);
+  o+='<rect x="-640" y="344" width="1920" height="44" fill="'+(beach?'#e3cd96':snow?'#e3e9ef':'#d9cdb4')+'"/>';
+  const nm=st.n.toUpperCase().slice(0,24),sw=Math.max(180,nm.length*12+50);
+  o+=`<rect x="${(150-sw/2).toFixed(0)}" y="110" width="${sw}" height="40" rx="7" fill="#34507a"/><text x="150" y="136" text-anchor="middle" font-family="Jost,sans-serif" font-size="16" font-weight="600" letter-spacing="2" fill="#fbfaf7">${esc(nm)}</text><rect x="146" y="150" width="8" height="190" fill="#55595f"/>`;
+  o+=`<text x="470" y="300" text-anchor="middle" font-size="130">${st.e}</text>`;
+  o+=`<g transform="translate(60 0)"><rect x="-40" y="318" width="120" height="34" rx="12" fill="${Lf().car}"/><path d="M-20 318L0 296L50 296L66 318Z" fill="${shade(Lf().car,.2)}"/><circle cx="-12" cy="354" r="11" fill="#1d1f23"/><circle cx="54" cy="354" r="11" fill="#1d1f23"/></g>`;
+  o+=crowd(4,378,.3,7+st.n.length,-60,700)+walkerG(l.x,.34,378);
+  return [o+'</svg>',beach?'#8fc1ea':'#8fc1ea']}
 function lifeScene(){
   const l=Lf();
   if(flying)return flyView==='out'?flightSVG():cabinSVG();
@@ -982,6 +1021,7 @@ function lifeScene(){
   if(l.place==='trille')return parkSVG();
   if(l.place==='butikk')return shopSVG();
   if(l.place==='bil')return driveSVG();
+  if(l.place==='sted')return stedSVG();
   if(l.place==='reise')return destSVG(l.dest,crowd(l.dest==='preikestolen'?2:4,370,.3,7+l.dest.length,-140,l.dest==='preikestolen'?400:780)+crewFigs(l.dest==='preikestolen'?[60,115,230,285,290,345]:[430,485,540,595,370,320],.34,376)+walkerG(l.x,.34,376));
   return roomParts(l.room,state.house.inne[l.room],walkerG(l.x,.36,372),true);
 }
@@ -1554,7 +1594,7 @@ function driveSVG(){if(DR.view==='in')return carInSVG();
     +(eve?'<rect x="-640" y="-600" width="1920" height="1400" fill="#0c1233" opacity=".4"/>':'')+'</svg>',sky[0]];
 }
 function driveStep(now){
-  if(!DR.run)return;const dt=Math.min(.05,(now-DR.t)/1000);DR.t=now;const l=Lf(),K=G3.keys;let ix=G3.dir.x+(K.r?1:0)-(K.l?1:0);if(ix&&!belted()){ix=0;if(now-DR.wt>2600){DR.wt=now;toast('Spenn fast setebeltet først!');sfx('bad')}}
+  if(!DR.run)return;const dt=Math.min(.05,(now-DR.t)/1000);DR.t=now;const l=Lf(),K=G3.keys;let ix=G3.dir.x+(K.r?1:0)-(K.l?1:0);if(DR.auto){ix=Math.sign(DR.auto.tx-l.cx)||1;if(Math.abs(DR.auto.tx-l.cx)<40){const d=DR.auto;DR.auto=null;DR.v=0;DR.run=false;arriveDrive(d);return}}if(ix&&!belted()){ix=0;if(now-DR.wt>2600){DR.wt=now;toast('Spenn fast setebeltet først!');sfx('bad')}}
   DR.v+=(ix*440-DR.v)*Math.min(1,dt*(ix?1.8:3));const ox=l.cx;l.cx=Math.max(150,Math.min(3050,l.cx+DR.v*dt));if(l.cx===ox)DR.v=0;
   if(Math.abs(DR.v)>4)DR.dirn=DR.v>0?1:-1;DR.ang+=(l.cx-ox)*DR.dirn/16*57.3;
   const ins=document.getElementById('ins');if(ins){ins.setAttribute('transform',`translate(${(-(l.cx*.8)%640).toFixed(1)} 0)`);const sp=document.getElementById('spd');if(sp)sp.textContent=Math.round(Math.abs(DR.v)/5)+' km/t';const wh=document.getElementById('wheel');if(wh)wh.setAttribute('transform',`rotate(${(ix*-6).toFixed(0)} 465 334)`)}
@@ -1683,6 +1723,11 @@ function act(a){
   if(k==='shopsit'){parkSit=v;need('energi',5);msg=nm+' setter seg ved bordet.';return render()}
   if(k==='shopout'){parkSit=null;l.place='trille';l.x=l.px||1000;sfx('door');msg='';return render()}
   if(k==='strollhome'){parkSit=null;l.place='ute';l.x=doorX();msg='Dere er hjemme igjen etter turen.';return render()}
+  if(k==='drgo'){const vv=a.slice(5),d=driveDests().find(x=>x[3]===vv);if(d)driveTo(d[3],d[0],d[1]);return}
+  if(k==='drany')return driveAny(drq);
+  if(k==='stedlook'){need('humor',5);msg='Så fint det er her!';return render()}
+  if(k==='stedfoto'){need('humor',6);sfx('click');msg='Du tok et fint bilde av '+((l.sted&&l.sted.n)||'stedet')+'.';return render()}
+  if(k==='stedtalk'){need('humor',5);msg=pick(['Hei! Fint vær i dag, ikke sant?','Hei! Er du ny her?','Hallo! Så fin du er i dag.','Hei! Har du vært her før?']);return render()}
   if(k==='letterdone'){l.letter=null;return render()}
   if(k==='petbed'){G3.petBed=!G3.petBed;msg=G3.petBed?p.pet.name+' går og legger seg i '+(p.pet.type==='hund'?'hundesenga':'senga si')+'.':p.pet.name+' kommer løpende.';if(!G3.petBed)G3.petJump=.8;sfx(p.pet.type==='hund'?'bark':p.pet.type==='katt'?'meow':'squeak');return render()}
   if(k==='kidbed'){if(G3.kbed){G3.kbed=false;msg=p.kid.name+' er våken og vil leke.';sfx('giggle');return render()}
@@ -1721,7 +1766,7 @@ function act(a){
   if(k==='wcancel'){writing=null;return render()}
   if(k==='wsend'){if(!writing.to){msg='Velg hvem brevet er til.';return render()}if(!writing.text.trim()){msg='Skriv noe i brevet først.';return render()}
     const to=writing.to;writing=null;render();return doAt(doorX()-80,()=>{l.pending=to;need('humor',8);msg='Brevet til '+to+' ligger i postkassa og er på vei. Kanskje du får svar.';fire('sendmail');render()})}
-  if(k==='drive'){l.place='bil';l.cx=300;DR.belt={me:false,kid:false};DR.view='in';return render()}
+  if(k==='drive'){DR.auto=null;l.place='bil';l.cx=300;DR.belt={me:false,kid:false};DR.view='in';return render()}
   if(k==='belt'){DR.belt[v]=true;sfx('buckle');msg=belted()?'Alle har setebeltet på. God tur!':v==='me'?'Setebeltet ditt er på.':p.kid.name+' har setebeltet på.';return render()}
   if(k==='carcol'){l.car=v;return render()}
   if(k==='carview'){DR.view=DR.view==='in'?'out':'in';return render()}
@@ -1814,8 +1859,9 @@ function lifeBody(){
       +`<div class="acts">${ab('shopout','Gå ut')}</div>`+m}
   if(l.place==='ute')return head('Ute','Utenfor huset')+row('Hjem',ab('in','Gå inn'))
     +row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join(''))+row('Naboer',NB.map((q,i)=>ab('friend:'+(NP+i),'Hils på '+q.name,1)).join(''))+row('Postkasse',(Gm().mail>0?ab('mail','Hent posten ('+Gm().mail+')'):'')+ab('write','Skriv et brev',1)+(Gm().mail>0?'':'<span class="hint">Ingen ny post akkurat nå.</span>'))+row('Bil',ab('drive','Kjør bil',1))+row('Reise',ab('airport','Dra til flyplassen',1))+row('Dyr',ab('petshop','Gå til dyrebutikken',1))+row('Parken',ab('stroll',P().kid.age===0?'Gå på trilletur med '+esc(P().kid.name):P().kid.age>0?'Gå tur i parken med '+esc(P().kid.name):'Gå tur i parken',1))+food+m;
+  if(l.place==='sted'){const st=l.sted||{n:'Et sted',e:'📍'};return head('Du er her',st.e+' '+esc(st.n),'Gå rundt med pilene eller trykk i bildet. Det er folk her også.')+row('Gjør noe',ab('stedlook','Se deg rundt',1)+ab('stedfoto','Ta et bilde',1)+ab('stedtalk','Hils på noen',1))+`<div class="acts">${ab('drive','Sett deg i bilen igjen')}${ab('home','Gå hjem',1)}</div>`+food+m}
   if(l.place==='bil'){const nr=STOPS.find(q=>Math.abs(q[1]-l.cx)<120);
-    return head('På veien',nr?nr[2]:'Kjør bil','Hold inne pilene i bildet, eller bruk piltastene.')
+    return (DR.auto?head('På veien','Kjører til '+esc(DR.auto.name),'Bilen kjører selv. Du er snart fremme.'):head('På veien',nr?nr[2]:'Kjør bil','Skriv hvor du vil kjøre, eller hold inne pilene i bildet.')+`<div class="row"><h2><label for="drq">Hvor vil du kjøre?</label></h2><input class="txt" id="drq" type="search" maxlength="28" autocomplete="off" enterkeyhint="go" placeholder="For eksempel stranda, parken eller Emma" value="${esc(drq)}"></div><div id="drres">${dresults()}</div>`)
       +(!nr?'':nr[0]==='friends'?row('Besøk en venn',state.people.map((q,i)=>i===state.cur?'':ab('friend:'+i,esc(q.name)||'Venn',1)).join('')):`<div class="acts">${ab(nr[0],nr[0]==='home'?'Parker hjemme':'Parker og gå inn')}</div>`)
       +row('Setebelte',(DR.belt.me?'<span class="chip on">Du har belte på</span>':ab('belt:me','Spenn fast deg selv'))+(P().kid.age<0?'':DR.belt.kid?`<span class="chip on">${esc(P().kid.name)} har belte på</span>`:ab('belt:kid','Spenn fast '+esc(P().kid.name))))+(belted()?'':'<p class="hint">Alle må ha setebeltet på før bilen kan kjøre.</p>')+`<div class="acts">${ab('carview',DR.view==='in'?'Se bilen utenfra':'Se inn i bilen',1)}</div>`+(()=>{const q=P(),w=[];if(q.kid.age>=0)w.push(esc(q.kid.name));if(q.pet.type!=='none')w.push(esc(q.pet.name));return w.length?`<p class="hint">Med i bilen: ${w.join(' og ')}.</p>`:''})()
       +row('Bilfarge',CARC.map((c,i)=>`<button type="button" class="sw${l.car===c?' on':''}" style="background:${c}" data-act="carcol:${c}" aria-label="Farge ${i+1}"></button>`).join(''))+m}
@@ -2084,7 +2130,7 @@ document.addEventListener('click',e=>{
   if(k==='kid.look.top'||k==='kid.look.bottom')P().kid.look.dress='none';
   render();
 });
-document.addEventListener('input',e=>{if(e.target.id==='jobq'){wq=e.target.value.slice(0,28);const r=document.getElementById('jobres');if(r)r.innerHTML=wresults();return}if(e.target.id==='kidname'){P().kid.name=e.target.value.slice(0,12);save();return}if(e.target.id==='kidn'){if(G3.kform)G3.kform.name=e.target.value.slice(0,12);return}if(e.target.id==='ltxt'){if(writing)writing.text=e.target.value.slice(0,400);return}if(e.target.id==='petn'){Lf().shop.name=e.target.value.slice(0,12);save();return}if(e.target.id!=='pn')return;P().name=e.target.value.slice(0,14);$('pname').textContent=P().name;save()});
+document.addEventListener('input',e=>{if(e.target.id==='drq'){drq=e.target.value.slice(0,28);const r=document.getElementById('drres');if(r)r.innerHTML=dresults();return}if(e.target.id==='jobq'){wq=e.target.value.slice(0,28);const r=document.getElementById('jobres');if(r)r.innerHTML=wresults();return}if(e.target.id==='kidname'){P().kid.name=e.target.value.slice(0,12);save();return}if(e.target.id==='kidn'){if(G3.kform)G3.kform.name=e.target.value.slice(0,12);return}if(e.target.id==='ltxt'){if(writing)writing.text=e.target.value.slice(0,400);return}if(e.target.id==='petn'){Lf().shop.name=e.target.value.slice(0,12);save();return}if(e.target.id!=='pn')return;P().name=e.target.value.slice(0,14);$('pname').textContent=P().name;save()});
 const DIRS={u:[0,-1],d:[0,1],l:[-1,0],r:[1,0]};
 $('pad').addEventListener('pointerdown',e=>{const b=e.target.closest('[data-dir]');if(!b)return;e.preventDefault();const d=DIRS[b.dataset.dir];G3.dir={x:d[0],z:d[1]}});
 ['pointerup','pointercancel','blur'].forEach(n=>window.addEventListener(n,()=>{G3.dir={x:0,z:0}}));
@@ -2096,7 +2142,7 @@ $('gl3').addEventListener('click',e=>{
   const x=Math.max(.5,Math.min(15.5,pt.x)),z=Math.max(1.75,Math.min(4.55,pt.z)),side=v=>v<5?0:v<11?1:2;
   if(h.z>=1.7&&side(x)===side(h.x)){G3.path=[{x:x,z:z}];G3.after=null;G3.stuck=0}else walkTo(x,z,Y)});
 const KM={ArrowLeft:'l',ArrowRight:'r',ArrowUp:'u',ArrowDown:'d',a:'l',d:'r',w:'u',s:'d'};
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='say'){e.preventDefault();say(e.target.value)}if(e.key==='Enter'&&e.target.id==='jobq'){e.preventDefault();wany(e.target.value)}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.id==='say'){e.preventDefault();say(e.target.value)}if(e.key==='Enter'&&e.target.id==='jobq'){e.preventDefault();wany(e.target.value)}if(e.key==='Enter'&&e.target.id==='drq'){e.preventDefault();drq=e.target.value;driveAny(drq)}});
 document.addEventListener('keyup',e=>{const k=KM[e.key];if(k)G3.keys[k]=false});
 $('scene').addEventListener('click',e=>{
   if(state.tab!=='liv'||flying||cook)return;const svg=$('scene').querySelector('svg');if(!svg||!svg.getScreenCTM)return;
